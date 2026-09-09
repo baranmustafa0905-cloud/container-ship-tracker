@@ -4,8 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🚢 Container Ship Tracker</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Leaflet Map -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         * {
             margin: 0;
@@ -15,7 +21,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
             color: #333;
             min-height: 100vh;
         }
@@ -30,18 +36,20 @@
         .header {
             background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
             color: white;
-            padding: 20px;
+            padding: 16px;
             text-align: center;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            position: relative;
         }
 
         .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 22px;
+            margin-bottom: 4px;
         }
 
         .header p {
-            font-size: 12px;
+            font-size: 11px;
             opacity: 0.9;
         }
 
@@ -72,7 +80,6 @@
 
         .tab-content {
             display: none;
-            padding: 20px;
             animation: fadeIn 0.3s;
         }
 
@@ -85,11 +92,25 @@
             to { opacity: 1; }
         }
 
+        .map-wrapper {
+            height: 500px;
+            width: 100%;
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
         .card {
             background: white;
             border-radius: 12px;
             padding: 16px;
-            margin-bottom: 16px;
+            margin: 0 16px 16px 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
@@ -121,6 +142,7 @@
             color: #000;
             font-weight: bold;
             font-size: 13px;
+            text-align: right;
         }
 
         .status-green {
@@ -133,43 +155,6 @@
 
         .status-red {
             color: #FF3B30;
-        }
-
-        .map-container {
-            width: 100%;
-            height: 300px;
-            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .map-pin {
-            position: absolute;
-            font-size: 24px;
-            cursor: pointer;
-        }
-
-        .pin-visited {
-            color: #34C759;
-        }
-
-        .pin-upcoming {
-            color: #FF9500;
-        }
-
-        .pin-current {
-            color: #FF3B30;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
         }
 
         .stats-grid {
@@ -188,7 +173,7 @@
         }
 
         .stat-value {
-            font-size: 24px;
+            font-size: 28px;
             font-weight: bold;
             margin-bottom: 4px;
         }
@@ -289,14 +274,37 @@
         }
 
         .location-display .big-number {
-            font-size: 32px;
+            font-size: 24px;
             font-weight: bold;
-            margin: 8px 0;
+            margin: 6px 0;
         }
 
-        .weather-icon {
-            font-size: 48px;
-            margin: 10px 0;
+        /* Leaflet Custom Styles */
+        .leaflet-popup-content {
+            font-size: 12px;
+            margin: 4px 0;
+        }
+
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+        }
+
+        .map-info {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 16px;
+        }
+
+        .route-info {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .route-info strong {
+            color: #007AFF;
         }
     </style>
 </head>
@@ -318,40 +326,32 @@
 
         <!-- Map Tab -->
         <div id="map" class="tab-content active">
-            <div class="card">
-                <div class="card-title">📍 Geminin Konumu</div>
-                <div class="map-container" id="mapContainer">
-                    <div class="map-pin pin-current" style="top: 40%; left: 50%;">📍</div>
-                    <div class="map-pin pin-visited" style="top: 30%; left: 20%;">🟢</div>
-                    <div class="map-pin pin-visited" style="top: 45%; left: 35%;">🟢</div>
-                    <div class="map-pin pin-visited" style="top: 55%; left: 45%;">🟢</div>
-                    <div class="map-pin pin-upcoming" style="top: 65%; left: 60%;">🟠</div>
-                    <div class="map-pin pin-upcoming" style="top: 50%; left: 75%;">🟠</div>
-                    <div class="map-pin pin-upcoming" style="top: 35%; left: 85%;">🟠</div>
-                </div>
-                <div class="row">
-                    <span class="label">🟢 Ziyaret Edilen</span>
-                    <span class="value">3</span>
-                </div>
-                <div class="row">
-                    <span class="label">🟠 Yaklaşan</span>
-                    <span class="value">3</span>
+            <div class="map-wrapper">
+                <div id="leaflet-map"></div>
+            </div>
+
+            <div class="map-info">
+                <div class="card-title">📍 Rota Bilgisi</div>
+                <div class="route-info">
+                    <strong>Başlangıç:</strong> Shanghai, Çin<br>
+                    <strong>Hedef:</strong> Hamburg, Almanya<br>
+                    <strong>Toplam Mesafe:</strong> 20,150 km<br>
+                    <strong>Katedilen:</strong> 7,450 km (%37)<br>
+                    <strong>Kalan:</strong> 12,700 km (%63)
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title">🚢 Rota Bilgisi</div>
-                <div class="row">
-                    <span class="label">Başlangıç</span>
-                    <span class="value">Shanghai, Çin</span>
-                </div>
-                <div class="row">
-                    <span class="label">Hedef</span>
-                    <span class="value">Hamburg, Almanya</span>
-                </div>
-                <div class="row">
-                    <span class="label">Mesafe</span>
-                    <span class="value">20,150 km</span>
+                <div class="card-title">📊 Liman İstatistikleri</div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Ziyaret Edilen</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Yaklaşan Liman</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -381,11 +381,11 @@
                 </div>
                 <div class="row">
                     <span class="label">Hız</span>
-                    <span class="value" id="speed">0 km/h</span>
+                    <span class="value" id="speed">18.5 km/h</span>
                 </div>
                 <div class="row">
                     <span class="label">Yönelim</span>
-                    <span class="value" id="heading">0°</span>
+                    <span class="value" id="heading">245°</span>
                 </div>
                 <div class="row">
                     <span class="label">Doğruluk</span>
@@ -515,20 +515,6 @@
                     </li>
                 </ul>
             </div>
-
-            <div class="card">
-                <div class="card-title">📊 İstatistikler</div>
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="stat-value">3</div>
-                        <div class="stat-label">Ziyaret Edilen</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value">3</div>
-                        <div class="stat-label">Yaklaşan Liman</div>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Settings Tab -->
@@ -590,59 +576,164 @@
                 <div class="card-title">ℹ️ Hakkında</div>
                 <div class="row">
                     <span class="label">Uygulama Versiyonu</span>
-                    <span class="value">1.0.0</span>
+                    <span class="value">2.0.0</span>
                 </div>
                 <div class="row">
-                    <span class="label">GitHub</span>
-                    <span class="value">Açık Kaynak</span>
+                    <span class="label">Harita</span>
+                    <span class="value">OpenStreetMap</span>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
+        // Rota noktaları (liman ve geminin konumları)
+        const routePoints = [
+            { name: "Shanghai", lat: 31.2304, lng: 121.4737, status: "visited", date: "1-5 Aug" },
+            { name: "Singapore", lat: 1.3521, lng: 103.8198, status: "visited", date: "15-18 Aug" },
+            { name: "Colombo", lat: 6.9271, lng: 80.7789, status: "visited", date: "28 Aug - 1 Sep" },
+            { name: "Port Said (Suez)", lat: 31.2629, lng: 32.2892, status: "upcoming", date: "12 Sep (ETA)" },
+            { name: "Rotterdam", lat: 51.9225, lng: 4.4792, status: "upcoming", date: "25 Sep (ETA)" },
+            { name: "Hamburg", lat: 53.5511, lng: 9.9937, status: "upcoming", date: "28 Sep (ETA)" }
+        ];
+
+        // Geminin mevcut konumu (Port Said yönde)
+        const currentLocation = { lat: 20.5, lng: 50.0 };
+
+        let map;
+        let routePolyline;
+        let markers = [];
+
+        // Haritayı başlat
+        function initMap() {
+            // Harita merkezi (Route ortası)
+            const mapCenter = [25, 50];
+
+            map = L.map('leaflet-map').setView(mapCenter, 3);
+
+            // OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Rota çizgisini çiz
+            drawRoute();
+
+            // Marker'ları ekle
+            addMarkers();
+
+            // Geminin konumunu göster
+            showShipLocation();
+        }
+
+        // Rota çizgisini çiz
+        function drawRoute() {
+            const latlngs = routePoints.map(p => [p.lat, p.lng]);
+            
+            routePolyline = L.polyline(latlngs, {
+                color: '#007AFF',
+                weight: 3,
+                opacity: 0.7,
+                dashArray: '5, 5'
+            }).addTo(map);
+
+            // Haritayı rota sınırına göre ayarla
+            map.fitBounds(routePolyline.getBounds(), { padding: [50, 50] });
+        }
+
+        // Marker'ları ekle
+        function addMarkers() {
+            routePoints.forEach(point => {
+                let icon;
+                let color = point.status === 'visited' ? '#34C759' : '#FF9500';
+                
+                // Custom icon
+                const customIcon = L.divIcon({
+                    html: `<div style="background: ${color}; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">⚓</div>`,
+                    iconSize: [30, 30],
+                    className: 'custom-marker'
+                });
+
+                const marker = L.marker([point.lat, point.lng], { icon: customIcon })
+                    .addTo(map)
+                    .bindPopup(`
+                        <strong>${point.name}</strong><br>
+                        Durum: ${point.status === 'visited' ? '✓ Ziyaret Edildi' : '⏱️ Yaklaşan'}<br>
+                        Tarih: ${point.date}
+                    `);
+
+                markers.push(marker);
+            });
+        }
+
+        // Geminin mevcut konumunu göster
+        function showShipLocation() {
+            const shipIcon = L.divIcon({
+                html: `<div style="background: #FF3B30; width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); animation: pulse 2s infinite;">🚢</div>`,
+                iconSize: [40, 40],
+                className: 'ship-marker'
+            });
+
+            L.marker(currentLocation, { icon: shipIcon })
+                .addTo(map)
+                .bindPopup(`
+                    <strong>MAJESTIC MAERSK</strong><br>
+                    Mevcut Konum<br>
+                    Hız: 18.5 km/h<br>
+                    Yönelim: 245°
+                `);
+
+            // Pulse animasyonu
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes pulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.1); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+
         let locationData = {
-            latitude: 35.6762,
-            longitude: 139.6503,
-            speed: 0,
-            heading: 0,
+            latitude: 20.5,
+            longitude: 50.0,
+            speed: 18.5,
+            heading: 245,
             accuracy: 15
         };
 
         function switchTab(tabName) {
-            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
             
-            // Remove active class from all tab buttons
             document.querySelectorAll('.tab').forEach(tab => {
                 tab.classList.remove('active');
             });
 
-            // Show selected tab
             document.getElementById(tabName).classList.add('active');
-            
-            // Add active class to clicked tab
             event.target.classList.add('active');
+
+            // Harita tab açıldığında, haritayı invalidate et
+            if (tabName === 'map') {
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 100);
+            }
         }
 
         function updateLocation() {
-            // Simulate location update
-            locationData.latitude += (Math.random() - 0.5) * 0.01;
-            locationData.longitude += (Math.random() - 0.5) * 0.01;
+            locationData.latitude += (Math.random() - 0.5) * 0.5;
+            locationData.longitude += (Math.random() - 0.5) * 0.5;
             locationData.speed = Math.random() * 25;
             locationData.heading = Math.random() * 360;
-            locationData.accuracy = Math.random() * 20 + 5;
 
-            // Update display
             document.getElementById('latitude').textContent = locationData.latitude.toFixed(4) + '°';
             document.getElementById('longitude').textContent = locationData.longitude.toFixed(4) + '°';
             document.getElementById('speed').textContent = locationData.speed.toFixed(1) + ' km/h';
             document.getElementById('heading').textContent = locationData.heading.toFixed(0) + '°';
-            document.getElementById('accuracy').textContent = '±' + locationData.accuracy.toFixed(1) + ' m';
 
-            // Animate button
             const btn = event.target;
             btn.textContent = '✓ Güncellendi!';
             setTimeout(() => {
@@ -650,7 +741,10 @@
             }, 2000);
         }
 
-        // Auto-update location every 30 seconds
+        // Sayfa yüklendiğinde haritayı başlat
+        window.addEventListener('load', initMap);
+
+        // Her 30 saniyede bir konum güncelle
         setInterval(updateLocation, 30000);
     </script>
 </body>
