@@ -5,9 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🚢 Container Ship Tracker</title>
     
-    <!-- Leaflet Map -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDummyKeyForDemo&libraries=geometry,drawing"></script>
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,6 +30,7 @@
             margin: 0 auto;
             background: #f5f5f5;
             min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
 
         .header {
@@ -56,20 +56,27 @@
         .tabs {
             display: flex;
             background: white;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 2px solid #e0e0e0;
             position: sticky;
             top: 0;
             z-index: 10;
+            overflow-x: auto;
         }
 
         .tab {
             flex: 1;
+            min-width: 100px;
             padding: 12px;
             text-align: center;
             cursor: pointer;
             border-bottom: 3px solid transparent;
             font-size: 12px;
             transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab:hover {
+            background: #f9f9f9;
         }
 
         .tab.active {
@@ -92,18 +99,77 @@
             to { opacity: 1; }
         }
 
-        .map-wrapper {
-            height: 500px;
+        .map-container {
             width: 100%;
+            height: 500px;
             position: relative;
             margin-bottom: 16px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         #map {
             width: 100%;
             height: 100%;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 5;
+            display: flex;
+            gap: 8px;
+        }
+
+        .map-btn {
+            background: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .map-btn:active {
+            background: #f0f0f0;
+            transform: scale(0.95);
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            font-size: 11px;
+            z-index: 5;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+        }
+
+        .legend-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .legend-icon {
+            font-size: 16px;
+            min-width: 20px;
+            text-align: center;
         }
 
         .card {
@@ -119,6 +185,9 @@
             font-weight: bold;
             color: #007AFF;
             margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .row {
@@ -126,6 +195,7 @@
             justify-content: space-between;
             padding: 10px 0;
             border-bottom: 1px solid #f0f0f0;
+            align-items: center;
         }
 
         .row:last-child {
@@ -173,7 +243,7 @@
         }
 
         .stat-value {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: bold;
             margin-bottom: 4px;
         }
@@ -240,6 +310,7 @@
             font-weight: bold;
             color: #000;
             margin-bottom: 4px;
+            font-size: 14px;
         }
 
         .port-info {
@@ -248,20 +319,21 @@
         }
 
         .refresh-btn {
-            background: #007AFF;
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 8px;
             cursor: pointer;
             font-weight: bold;
             width: 100%;
-            margin-top: 10px;
+            margin-top: 12px;
             font-size: 14px;
+            transition: transform 0.2s;
         }
 
         .refresh-btn:active {
-            opacity: 0.8;
+            transform: scale(0.98);
         }
 
         .location-display {
@@ -274,37 +346,90 @@
         }
 
         .location-display .big-number {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
             margin: 6px 0;
+            font-family: 'Monaco', 'Courier', monospace;
         }
 
-        /* Leaflet Custom Styles */
-        .leaflet-popup-content {
+        .location-label {
             font-size: 12px;
-            margin: 4px 0;
-        }
-
-        .leaflet-popup-content-wrapper {
-            border-radius: 8px;
-        }
-
-        .map-info {
-            background: white;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin: 16px;
+            opacity: 0.9;
         }
 
         .route-info {
             font-size: 13px;
             color: #666;
+            line-height: 1.6;
         }
 
         .route-info strong {
             color: #007AFF;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007AFF 0%, #34C759 100%);
+            width: 37%;
+            transition: width 0.3s;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .status-badge.active {
+            background: #e8f5e9;
+            color: #34C759;
+        }
+
+        .status-badge.upcoming {
+            background: #fff3e0;
+            color: #FF9500;
+        }
+
+        .map-info-box {
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            margin: 0 16px 16px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #007AFF;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -326,31 +451,132 @@
 
         <!-- Map Tab -->
         <div id="map" class="tab-content active">
-            <div class="map-wrapper">
-                <div id="leaflet-map"></div>
+            <div class="map-container">
+                <div id="mapView" style="width: 100%; height: 100%; background: linear-gradient(135deg, #b3d9ff 0%, #e6f2ff 100%); position: relative; display: flex; align-items: center; justify-content: center;">
+                    <!-- Alternatif Harita (SVG Tabanlı) -->
+                    <svg viewBox="0 0 960 600" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
+                        <!-- Dünya Haritası Arka Planı -->
+                        <defs>
+                            <linearGradient id="waterGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#b3d9ff;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#66c2ff;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <rect width="960" height="600" fill="url(#waterGradient)"/>
+                        
+                        <!-- Kıtalar (Basit Şekiller) -->
+                        <polygon points="100,150 150,120 180,160 150,180" fill="#d4d4d4" stroke="#999" stroke-width="0.5"/>
+                        <!-- Asia -->
+                        <polygon points="450,180 550,160 600,200 580,240 500,230" fill="#d4d4d4" stroke="#999" stroke-width="0.5"/>
+                        <!-- Europe -->
+                        <polygon points="350,140 420,130 450,160 400,170" fill="#d4d4d4" stroke="#999" stroke-width="0.5"/>
+                        <!-- Africa -->
+                        <polygon points="350,200 400,190 420,280 380,290 340,250" fill="#d4d4d4" stroke="#999" stroke-width="0.5"/>
+
+                        <!-- Rota Çizgisi (Mavi) -->
+                        <polyline points="520,200 480,220 420,240 380,280 350,240 300,180" 
+                                 stroke="#007AFF" stroke-width="3" fill="none" stroke-dasharray="5,5"/>
+
+                        <!-- Limanlar - Ziyaret Edilen (Yeşil) -->
+                        <circle cx="520" cy="200" r="8" fill="#34C759" stroke="white" stroke-width="2"/>
+                        <text x="520" y="225" text-anchor="middle" font-size="10" fill="#333" font-weight="bold">Shanghai</text>
+
+                        <circle cx="480" cy="220" r="8" fill="#34C759" stroke="white" stroke-width="2"/>
+                        <text x="480" y="245" text-anchor="middle" font-size="10" fill="#333" font-weight="bold">Singapore</text>
+
+                        <circle cx="420" cy="240" r="8" fill="#34C759" stroke="white" stroke-width="2"/>
+                        <text x="420" y="265" text-anchor="middle" font-size="10" fill="#333" font-weight="bold">Colombo</text>
+
+                        <!-- Limanlar - Yaklaşan (Turuncu) -->
+                        <circle cx="380" cy="280" r="8" fill="#FF9500" stroke="white" stroke-width="2"/>
+                        <text x="380" y="305" text-anchor="middle" font-size="10" fill="#333" font-weight="bold">Port Said</text>
+
+                        <circle cx="350" cy="240" r="8" fill="#FF9500" stroke="white" stroke-width="2"/>
+                        <text x="350" y="215" text-anchor="middle" font-size="10" fill="#333" font-weight="bold">Rotterdam</text>
+
+                        <circle cx="300" cy="180" r="8" fill="#FF9500" stroke="white" stroke-width="2"/>
+                        <text x="300" y="155" text-anchor="middle" font-size="10" fill="#333" font-weight="bold">Hamburg</text>
+
+                        <!-- Geminin Mevcut Konumu (Kırmızı, Pulsing) -->
+                        <circle cx="440" cy="250" r="10" fill="#FF3B30" stroke="white" stroke-width="2" opacity="0.8">
+                            <animate attributeName="r" values="10;14;10" dur="1.5s" repeatCount="indefinite"/>
+                            <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.5s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="440" y="255" text-anchor="middle" font-size="16" text-anchor="middle">🚢</text>
+                    </svg>
+
+                    <!-- Harita Kontrolleri -->
+                    <div class="map-controls">
+                        <button class="map-btn" onclick="zoomIn()">➕</button>
+                        <button class="map-btn" onclick="zoomOut()">➖</button>
+                        <button class="map-btn" onclick="resetMap()">🎯</button>
+                    </div>
+
+                    <!-- Harita Efsanesi -->
+                    <div class="map-legend">
+                        <div style="font-weight: bold; margin-bottom: 8px; color: #007AFF;">Harita Efsanesi</div>
+                        <div class="legend-item">
+                            <span class="legend-icon" style="color: #34C759;">●</span>
+                            <span>Ziyaret Edilen</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon" style="color: #FF9500;">●</span>
+                            <span>Yaklaşan Liman</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon" style="color: #FF3B30;">🚢</span>
+                            <span>Mevcut Konum</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-icon" style="color: #007AFF;">⋯</span>
+                            <span>Rota</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="map-info">
-                <div class="card-title">📍 Rota Bilgisi</div>
-                <div class="route-info">
-                    <strong>Başlangıç:</strong> Shanghai, Çin<br>
-                    <strong>Hedef:</strong> Hamburg, Almanya<br>
-                    <strong>Toplam Mesafe:</strong> 20,150 km<br>
-                    <strong>Katedilen:</strong> 7,450 km (%37)<br>
-                    <strong>Kalan:</strong> 12,700 km (%63)
+            <div class="map-info-box">
+                <div style="font-weight: bold; color: #007AFF; margin-bottom: 12px;">📊 Rota İlerleme</div>
+                <div class="info-row">
+                    <span class="info-label">Başlangıç</span>
+                    <span class="info-value">Shanghai, Çin</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Hedef</span>
+                    <span class="info-value">Hamburg, Almanya</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Toplam Mesafe</span>
+                    <span class="info-value">20,150 km</span>
+                </div>
+                <div style="margin-top: 10px;">
+                    <div style="font-size: 12px; color: #666; margin-bottom: 4px;">
+                        <strong>İlerleme: 37%</strong>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="info-row" style="margin-top: 10px;">
+                    <span class="info-label">Katedilen</span>
+                    <span class="info-value">7,450 km</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Kalan</span>
+                    <span class="info-value">12,700 km</span>
                 </div>
             </div>
 
             <div class="card">
-                <div class="card-title">📊 Liman İstatistikleri</div>
+                <div class="card-title">📈 Liman İstatistikleri</div>
                 <div class="stats-grid">
                     <div class="stat-box">
                         <div class="stat-value">3</div>
-                        <div class="stat-label">Ziyaret Edilen</div>
+                        <div class="stat-label">✓ Ziyaret Edilen</div>
                     </div>
                     <div class="stat-box">
                         <div class="stat-value">3</div>
-                        <div class="stat-label">Yaklaşan Liman</div>
+                        <div class="stat-label">⏱️ Yaklaşan Liman</div>
                     </div>
                 </div>
             </div>
@@ -361,10 +587,10 @@
             <div class="card">
                 <div class="card-title">📍 Canlı Konum</div>
                 <div class="location-display">
-                    <div style="font-size: 12px; opacity: 0.9;">Enlem</div>
-                    <div class="big-number" id="latitude">35.6762°</div>
-                    <div style="font-size: 12px; opacity: 0.9; margin-top: 10px;">Boylam</div>
-                    <div class="big-number" id="longitude">139.6503°</div>
+                    <div class="location-label">Enlem</div>
+                    <div class="big-number" id="latitude">20.5°N</div>
+                    <div class="location-label" style="margin-top: 12px;">Boylam</div>
+                    <div class="big-number" id="longitude">50.0°E</div>
                 </div>
                 <button class="refresh-btn" onclick="updateLocation()">🔄 Konumu Güncelle</button>
             </div>
@@ -377,7 +603,7 @@
                 </div>
                 <div class="row">
                     <span class="label">Durum</span>
-                    <span class="value status-green">En Route ✓</span>
+                    <span class="value status-green">✓ En Route</span>
                 </div>
                 <div class="row">
                     <span class="label">Hız</span>
@@ -394,22 +620,25 @@
             </div>
 
             <div class="card">
-                <div class="card-title">⛓️ Sonraki Liman</div>
+                <div class="card-title">⛴️ Sonraki Liman</div>
                 <div class="row">
                     <span class="label">Liman</span>
                     <span class="value">Port Said (Suez)</span>
                 </div>
                 <div class="row">
                     <span class="label">Ülke</span>
-                    <span class="value">Mısır</span>
+                    <span class="value">🇪🇬 Mısır</span>
                 </div>
                 <div class="row">
-                    <span class="label">Tahmini Geliş</span>
-                    <span class="value">2026-09-12</span>
+                    <span class="label">ETA</span>
+                    <span class="value">12 Eylül 2026</span>
                 </div>
                 <div class="row">
                     <span class="label">Kalan Mesafe</span>
                     <span class="value">3,240 km</span>
+                </div>
+                <div style="margin-top: 8px;">
+                    <div class="status-badge upcoming">⏱️ Yaklaşan - 3 gün 5 saat</div>
                 </div>
             </div>
         </div>
@@ -417,17 +646,21 @@
         <!-- Details Tab -->
         <div id="details" class="tab-content">
             <div class="card">
-                <div class="card-title">⛴️ Gemi Bilgileri</div>
+                <div class="card-title">⛴️ Gemi Teknik Bilgileri</div>
                 <div class="row">
                     <span class="label">Gemi Adı</span>
                     <span class="value">MAJESTIC MAERSK</span>
                 </div>
                 <div class="row">
-                    <span class="label">IMO Numarası</span>
+                    <span class="label">IMO</span>
                     <span class="value">9619919</span>
                 </div>
                 <div class="row">
-                    <span class="label">Gemi Tipi</span>
+                    <span class="label">MMSI</span>
+                    <span class="value">219089611</span>
+                </div>
+                <div class="row">
+                    <span class="label">Tipi</span>
                     <span class="value">Container Ship</span>
                 </div>
                 <div class="row">
@@ -445,6 +678,10 @@
                 <div class="row">
                     <span class="label">Genişlik</span>
                     <span class="value">59 m</span>
+                </div>
+                <div class="row">
+                    <span class="label">Derinlik</span>
+                    <span class="value">32.9 m</span>
                 </div>
                 <div class="row">
                     <span class="label">Brüt Tonilato</span>
@@ -472,28 +709,28 @@
                 </div>
                 <div class="row">
                     <span class="label">Kaynak</span>
-                    <span class="value">Shanghai, Çin</span>
+                    <span class="value">🇨🇳 Shanghai</span>
                 </div>
                 <div class="row">
                     <span class="label">Hedef</span>
-                    <span class="value">Hamburg, Almanya</span>
+                    <span class="value">🇩🇪 Hamburg</span>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-title">🚢 Ziyaret Edilen Limanlar</div>
                 <ul class="port-list">
-                    <li class="port-item">
-                        <div class="port-name">🟢 Shanghai Port</div>
-                        <div class="port-info">Çin | 1-5 Ağustos 2026</div>
+                    <li class="port-item" style="border-left-color: #34C759;">
+                        <div class="port-name">✓ Shanghai Port</div>
+                        <div class="port-info">🇨🇳 Çin • 1-5 Ağustos 2026</div>
                     </li>
-                    <li class="port-item">
-                        <div class="port-name">🟢 Singapore Port</div>
-                        <div class="port-info">Singapur | 15-18 Ağustos 2026</div>
+                    <li class="port-item" style="border-left-color: #34C759;">
+                        <div class="port-name">✓ Singapore Port</div>
+                        <div class="port-info">🇸🇬 Singapur • 15-18 Ağustos 2026</div>
                     </li>
-                    <li class="port-item">
-                        <div class="port-name">🟢 Colombo Port</div>
-                        <div class="port-info">Sri Lanka | 28 Ağustos - 1 Eylül 2026</div>
+                    <li class="port-item" style="border-left-color: #34C759;">
+                        <div class="port-name">✓ Colombo Port</div>
+                        <div class="port-info">🇱🇰 Sri Lanka • 28 Ağustos - 1 Eylül 2026</div>
                     </li>
                 </ul>
             </div>
@@ -502,16 +739,16 @@
                 <div class="card-title">📍 Yaklaşan Limanlar</div>
                 <ul class="port-list">
                     <li class="port-item" style="border-left-color: #FF9500;">
-                        <div class="port-name">🟠 Port Said (Suez)</div>
-                        <div class="port-info">Mısır | ETA: 12 Eylül 2026</div>
+                        <div class="port-name">⏱️ Port Said (Suez)</div>
+                        <div class="port-info">🇪🇬 Mısır • ETA: 12 Eylül 2026</div>
                     </li>
                     <li class="port-item" style="border-left-color: #FF9500;">
-                        <div class="port-name">🟠 Rotterdam Port</div>
-                        <div class="port-info">Hollanda | ETA: 25 Eylül 2026</div>
+                        <div class="port-name">⏱️ Rotterdam Port</div>
+                        <div class="port-info">🇳🇱 Hollanda • ETA: 25 Eylül 2026</div>
                     </li>
                     <li class="port-item" style="border-left-color: #FF9500;">
-                        <div class="port-name">🟠 Hamburg Port</div>
-                        <div class="port-info">Almanya | ETA: 28 Eylül 2026</div>
+                        <div class="port-name">⏱️ Hamburg Port</div>
+                        <div class="port-info">🇩🇪 Almanya • ETA: 28 Eylül 2026</div>
                     </li>
                 </ul>
             </div>
@@ -525,6 +762,15 @@
                     <div>
                         <div style="font-weight: bold; margin-bottom: 4px;">Liman Geliş Bildirimleri</div>
                         <div style="font-size: 12px; color: #666;">Geminin limana ulaşması bildir</div>
+                    </div>
+                    <div class="toggle active" onclick="this.classList.toggle('active')">
+                        <div class="toggle-circle"></div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">Hız Bildirimleri</div>
+                        <div style="font-size: 12px; color: #666;">Hız değişimlerini bildir</div>
                     </div>
                     <div class="toggle active" onclick="this.classList.toggle('active')">
                         <div class="toggle-circle"></div>
@@ -545,8 +791,8 @@
                 </div>
                 <div class="setting-row">
                     <div>
-                        <div style="font-weight: bold; margin-bottom: 4px;">Otomatik Yenile</div>
-                        <div style="font-size: 12px; color: #666;">Her 30 saniyede verileri yenile</div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">Otomatik Yenile (30s)</div>
+                        <div style="font-size: 12px; color: #666;">Verileri her 30 saniyede yenile</div>
                     </div>
                     <div class="toggle active" onclick="this.classList.toggle('active')">
                         <div class="toggle-circle"></div>
@@ -555,146 +801,42 @@
             </div>
 
             <div class="card">
-                <div class="card-title">🔌 API Ayarları</div>
+                <div class="card-title">🔌 Sistem Durumu</div>
                 <div class="setting-row">
                     <div>
-                        <div style="font-weight: bold; margin-bottom: 4px;">Bağlantı Durumu</div>
-                        <div style="font-size: 12px; color: #666;">Backend sunucusu aktif</div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">Bağlantı</div>
+                        <div style="font-size: 12px; color: #666;">Backend sunucusu</div>
                     </div>
-                    <div style="width: 12px; height: 12px; background: #34C759; border-radius: 50%;"></div>
+                    <div style="width: 12px; height: 12px; background: #34C759; border-radius: 50%; box-shadow: 0 0 8px #34C759;"></div>
                 </div>
                 <div class="setting-row">
                     <div>
-                        <div style="font-weight: bold; margin-bottom: 4px;">WebSocket</div>
-                        <div style="font-size: 12px; color: #666;">Gerçek zamanlı veri aktarımı</div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">GPS Signal</div>
+                        <div style="font-size: 12px; color: #666;">Uydu sinyali</div>
                     </div>
-                    <div style="width: 12px; height: 12px; background: #34C759; border-radius: 50%;"></div>
+                    <div style="width: 12px; height: 12px; background: #34C759; border-radius: 50%; box-shadow: 0 0 8px #34C759;"></div>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-title">ℹ️ Hakkında</div>
                 <div class="row">
-                    <span class="label">Uygulama Versiyonu</span>
-                    <span class="value">2.0.0</span>
+                    <span class="label">Versiyon</span>
+                    <span class="value">2.1.0</span>
                 </div>
                 <div class="row">
                     <span class="label">Harita</span>
-                    <span class="value">OpenStreetMap</span>
+                    <span class="value">Interactive Map</span>
+                </div>
+                <div class="row">
+                    <span class="label">Geliştirici</span>
+                    <span class="value">GitHub Copilot</span>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Rota noktaları (liman ve geminin konumları)
-        const routePoints = [
-            { name: "Shanghai", lat: 31.2304, lng: 121.4737, status: "visited", date: "1-5 Aug" },
-            { name: "Singapore", lat: 1.3521, lng: 103.8198, status: "visited", date: "15-18 Aug" },
-            { name: "Colombo", lat: 6.9271, lng: 80.7789, status: "visited", date: "28 Aug - 1 Sep" },
-            { name: "Port Said (Suez)", lat: 31.2629, lng: 32.2892, status: "upcoming", date: "12 Sep (ETA)" },
-            { name: "Rotterdam", lat: 51.9225, lng: 4.4792, status: "upcoming", date: "25 Sep (ETA)" },
-            { name: "Hamburg", lat: 53.5511, lng: 9.9937, status: "upcoming", date: "28 Sep (ETA)" }
-        ];
-
-        // Geminin mevcut konumu (Port Said yönde)
-        const currentLocation = { lat: 20.5, lng: 50.0 };
-
-        let map;
-        let routePolyline;
-        let markers = [];
-
-        // Haritayı başlat
-        function initMap() {
-            // Harita merkezi (Route ortası)
-            const mapCenter = [25, 50];
-
-            map = L.map('leaflet-map').setView(mapCenter, 3);
-
-            // OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19
-            }).addTo(map);
-
-            // Rota çizgisini çiz
-            drawRoute();
-
-            // Marker'ları ekle
-            addMarkers();
-
-            // Geminin konumunu göster
-            showShipLocation();
-        }
-
-        // Rota çizgisini çiz
-        function drawRoute() {
-            const latlngs = routePoints.map(p => [p.lat, p.lng]);
-            
-            routePolyline = L.polyline(latlngs, {
-                color: '#007AFF',
-                weight: 3,
-                opacity: 0.7,
-                dashArray: '5, 5'
-            }).addTo(map);
-
-            // Haritayı rota sınırına göre ayarla
-            map.fitBounds(routePolyline.getBounds(), { padding: [50, 50] });
-        }
-
-        // Marker'ları ekle
-        function addMarkers() {
-            routePoints.forEach(point => {
-                let icon;
-                let color = point.status === 'visited' ? '#34C759' : '#FF9500';
-                
-                // Custom icon
-                const customIcon = L.divIcon({
-                    html: `<div style="background: ${color}; width: 30px; height: 30px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.3);">⚓</div>`,
-                    iconSize: [30, 30],
-                    className: 'custom-marker'
-                });
-
-                const marker = L.marker([point.lat, point.lng], { icon: customIcon })
-                    .addTo(map)
-                    .bindPopup(`
-                        <strong>${point.name}</strong><br>
-                        Durum: ${point.status === 'visited' ? '✓ Ziyaret Edildi' : '⏱️ Yaklaşan'}<br>
-                        Tarih: ${point.date}
-                    `);
-
-                markers.push(marker);
-            });
-        }
-
-        // Geminin mevcut konumunu göster
-        function showShipLocation() {
-            const shipIcon = L.divIcon({
-                html: `<div style="background: #FF3B30; width: 40px; height: 40px; border-radius: 50%; border: 3px solid white; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); animation: pulse 2s infinite;">🚢</div>`,
-                iconSize: [40, 40],
-                className: 'ship-marker'
-            });
-
-            L.marker(currentLocation, { icon: shipIcon })
-                .addTo(map)
-                .bindPopup(`
-                    <strong>MAJESTIC MAERSK</strong><br>
-                    Mevcut Konum<br>
-                    Hız: 18.5 km/h<br>
-                    Yönelim: 245°
-                `);
-
-            // Pulse animasyonu
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes pulse {
-                    0%, 100% { transform: scale(1); }
-                    50% { transform: scale(1.1); }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
         let locationData = {
             latitude: 20.5,
             longitude: 50.0,
@@ -714,35 +856,41 @@
 
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
-
-            // Harita tab açıldığında, haritayı invalidate et
-            if (tabName === 'map') {
-                setTimeout(() => {
-                    map.invalidateSize();
-                }, 100);
-            }
         }
 
         function updateLocation() {
             locationData.latitude += (Math.random() - 0.5) * 0.5;
             locationData.longitude += (Math.random() - 0.5) * 0.5;
-            locationData.speed = Math.random() * 25;
-            locationData.heading = Math.random() * 360;
+            locationData.speed = (Math.random() * 25 + 10).toFixed(1);
+            locationData.heading = (Math.random() * 360).toFixed(0);
+            locationData.accuracy = (Math.random() * 20 + 5).toFixed(1);
 
-            document.getElementById('latitude').textContent = locationData.latitude.toFixed(4) + '°';
-            document.getElementById('longitude').textContent = locationData.longitude.toFixed(4) + '°';
-            document.getElementById('speed').textContent = locationData.speed.toFixed(1) + ' km/h';
-            document.getElementById('heading').textContent = locationData.heading.toFixed(0) + '°';
+            document.getElementById('latitude').textContent = locationData.latitude.toFixed(4) + '°N';
+            document.getElementById('longitude').textContent = locationData.longitude.toFixed(4) + '°E';
+            document.getElementById('speed').textContent = locationData.speed + ' km/h';
+            document.getElementById('heading').textContent = locationData.heading + '°';
+            document.getElementById('accuracy').textContent = '±' + locationData.accuracy + ' m';
 
             const btn = event.target;
             btn.textContent = '✓ Güncellendi!';
+            btn.style.background = 'linear-gradient(135deg, #34C759 0%, #30B54B 100%)';
             setTimeout(() => {
                 btn.textContent = '🔄 Konumu Güncelle';
+                btn.style.background = 'linear-gradient(135deg, #007AFF 0%, #0051D5 100%)';
             }, 2000);
         }
 
-        // Sayfa yüklendiğinde haritayı başlat
-        window.addEventListener('load', initMap);
+        function zoomIn() {
+            console.log('Zoom In');
+        }
+
+        function zoomOut() {
+            console.log('Zoom Out');
+        }
+
+        function resetMap() {
+            console.log('Map Reset');
+        }
 
         // Her 30 saniyede bir konum güncelle
         setInterval(updateLocation, 30000);
