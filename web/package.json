@@ -1,0 +1,11 @@
+{
+  "name": "container-ship-tracker-web",
+  "version": "1.0.0",
+  "description": "Web version of Container Ship Tracker",
+  "private": true,
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "build": "echo 'Web version ready'",
+    "start": "python -m http.server 8000"
+  }
+}
