@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚢 Container Ship Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 480px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #007AFF 0%, #0051D5 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: white;
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            border-bottom-color: #007AFF;
+            color: #007AFF;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #007AFF;
+            margin-bottom: 12px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #666;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .value {
+            color: #000;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .status-green {
+            color: #34C759;
+        }
+
+        .status-orange {
+            color: #FF9500;
+        }
+
+        .status-red {
+            color: #FF3B30;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 300px;
+            background: linear-gradient(135deg, #e0e7ff 0%, #f3e8ff 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-pin {
+            position: absolute;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .pin-visited {
+            color: #34C759;
+        }
+
+        .pin-upcoming {
+            color: #FF9500;
+        }
+
+        .pin-current {
+            color: #FF3B30;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            opacity: 0.9;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .setting-row:last-child {
+            border-bottom: none;
+        }
+
+        .toggle {
+            width: 50px;
+            height: 28px;
+            background: #ccc;
+            border-radius: 14px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle.active {
+            background: #34C759;
+        }
+
+        .toggle-circle {
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 12px;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s;
+        }
+
+        .toggle.active .toggle-circle {
+            left: 24px;
+        }
+
+        .port-list {
+            list-style: none;
+        }
+
+        .port-item {
+            background: #f9f9f9;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 4px solid #007AFF;
+        }
+
+        .port-name {
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 4px;
+        }
+
+        .port-info {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .refresh-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .refresh-btn:active {
+            opacity: 0.8;
+        }
+
+        .location-display {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .location-display .big-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .weather-icon {
+            font-size: 48px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🚢 Container Ship Tracker</h1>
+            <p>MAJESTIC MAERSK - IMO 9619919</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('map')">🗺️ Harita</div>
+            <div class="tab" onclick="switchTab('tracking')">📍 Takip</div>
+            <div class="tab" onclick="switchTab('details')">📊 Detaylar</div>
+            <div class="tab" onclick="switchTab('settings')">⚙️ Ayarlar</div>
+        </div>
+
+        <!-- Map Tab -->
+        <div id="map" class="tab-content active">
+            <div class="card">
+                <div class="card-title">📍 Geminin Konumu</div>
+                <div class="map-container" id="mapContainer">
+                    <div class="map-pin pin-current" style="top: 40%; left: 50%;">📍</div>
+                    <div class="map-pin pin-visited" style="top: 30%; left: 20%;">🟢</div>
+                    <div class="map-pin pin-visited" style="top: 45%; left: 35%;">🟢</div>
+                    <div class="map-pin pin-visited" style="top: 55%; left: 45%;">🟢</div>
+                    <div class="map-pin pin-upcoming" style="top: 65%; left: 60%;">🟠</div>
+                    <div class="map-pin pin-upcoming" style="top: 50%; left: 75%;">🟠</div>
+                    <div class="map-pin pin-upcoming" style="top: 35%; left: 85%;">🟠</div>
+                </div>
+                <div class="row">
+                    <span class="label">🟢 Ziyaret Edilen</span>
+                    <span class="value">3</span>
+                </div>
+                <div class="row">
+                    <span class="label">🟠 Yaklaşan</span>
+                    <span class="value">3</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🚢 Rota Bilgisi</div>
+                <div class="row">
+                    <span class="label">Başlangıç</span>
+                    <span class="value">Shanghai, Çin</span>
+                </div>
+                <div class="row">
+                    <span class="label">Hedef</span>
+                    <span class="value">Hamburg, Almanya</span>
+                </div>
+                <div class="row">
+                    <span class="label">Mesafe</span>
+                    <span class="value">20,150 km</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tracking Tab -->
+        <div id="tracking" class="tab-content">
+            <div class="card">
+                <div class="card-title">📍 Canlı Konum</div>
+                <div class="location-display">
+                    <div style="font-size: 12px; opacity: 0.9;">Enlem</div>
+                    <div class="big-number" id="latitude">35.6762°</div>
+                    <div style="font-size: 12px; opacity: 0.9; margin-top: 10px;">Boylam</div>
+                    <div class="big-number" id="longitude">139.6503°</div>
+                </div>
+                <button class="refresh-btn" onclick="updateLocation()">🔄 Konumu Güncelle</button>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⚓ Gemi Durumu</div>
+                <div class="row">
+                    <span class="label">Gemi Adı</span>
+                    <span class="value">MAJESTIC MAERSK</span>
+                </div>
+                <div class="row">
+                    <span class="label">Durum</span>
+                    <span class="value status-green">En Route ✓</span>
+                </div>
+                <div class="row">
+                    <span class="label">Hız</span>
+                    <span class="value" id="speed">0 km/h</span>
+                </div>
+                <div class="row">
+                    <span class="label">Yönelim</span>
+                    <span class="value" id="heading">0°</span>
+                </div>
+                <div class="row">
+                    <span class="label">Doğruluk</span>
+                    <span class="value" id="accuracy">±15 m</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⛓️ Sonraki Liman</div>
+                <div class="row">
+                    <span class="label">Liman</span>
+                    <span class="value">Port Said (Suez)</span>
+                </div>
+                <div class="row">
+                    <span class="label">Ülke</span>
+                    <span class="value">Mısır</span>
+                </div>
+                <div class="row">
+                    <span class="label">Tahmini Geliş</span>
+                    <span class="value">2026-09-12</span>
+                </div>
+                <div class="row">
+                    <span class="label">Kalan Mesafe</span>
+                    <span class="value">3,240 km</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details Tab -->
+        <div id="details" class="tab-content">
+            <div class="card">
+                <div class="card-title">⛴️ Gemi Bilgileri</div>
+                <div class="row">
+                    <span class="label">Gemi Adı</span>
+                    <span class="value">MAJESTIC MAERSK</span>
+                </div>
+                <div class="row">
+                    <span class="label">IMO Numarası</span>
+                    <span class="value">9619919</span>
+                </div>
+                <div class="row">
+                    <span class="label">Gemi Tipi</span>
+                    <span class="value">Container Ship</span>
+                </div>
+                <div class="row">
+                    <span class="label">Bayrak</span>
+                    <span class="value">🇩🇰 Danimarka</span>
+                </div>
+                <div class="row">
+                    <span class="label">İşletmeci</span>
+                    <span class="value">Maersk Line</span>
+                </div>
+                <div class="row">
+                    <span class="label">Uzunluk</span>
+                    <span class="value">399 m</span>
+                </div>
+                <div class="row">
+                    <span class="label">Genişlik</span>
+                    <span class="value">59 m</span>
+                </div>
+                <div class="row">
+                    <span class="label">Brüt Tonilato</span>
+                    <span class="value">218,000 GT</span>
+                </div>
+                <div class="row">
+                    <span class="label">TEU Kapasitesi</span>
+                    <span class="value">18,000 TEU</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📦 Konteyner Bilgileri</div>
+                <div class="row">
+                    <span class="label">Konteyner No</span>
+                    <span class="value">TGBU6051037</span>
+                </div>
+                <div class="row">
+                    <span class="label">Tipi</span>
+                    <span class="value">20ft High Cube</span>
+                </div>
+                <div class="row">
+                    <span class="label">Ağırlığı</span>
+                    <span class="value">24.5 ton</span>
+                </div>
+                <div class="row">
+                    <span class="label">Kaynak</span>
+                    <span class="value">Shanghai, Çin</span>
+                </div>
+                <div class="row">
+                    <span class="label">Hedef</span>
+                    <span class="value">Hamburg, Almanya</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🚢 Ziyaret Edilen Limanlar</div>
+                <ul class="port-list">
+                    <li class="port-item">
+                        <div class="port-name">🟢 Shanghai Port</div>
+                        <div class="port-info">Çin | 1-5 Ağustos 2026</div>
+                    </li>
+                    <li class="port-item">
+                        <div class="port-name">🟢 Singapore Port</div>
+                        <div class="port-info">Singapur | 15-18 Ağustos 2026</div>
+                    </li>
+                    <li class="port-item">
+                        <div class="port-name">🟢 Colombo Port</div>
+                        <div class="port-info">Sri Lanka | 28 Ağustos - 1 Eylül 2026</div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📍 Yaklaşan Limanlar</div>
+                <ul class="port-list">
+                    <li class="port-item" style="border-left-color: #FF9500;">
+                        <div class="port-name">🟠 Port Said (Suez)</div>
+                        <div class="port-info">Mısır | ETA: 12 Eylül 2026</div>
+                    </li>
+                    <li class="port-item" style="border-left-color: #FF9500;">
+                        <div class="port-name">🟠 Rotterdam Port</div>
+                        <div class="port-info">Hollanda | ETA: 25 Eylül 2026</div>
+                    </li>
+                    <li class="port-item" style="border-left-color: #FF9500;">
+                        <div class="port-name">🟠 Hamburg Port</div>
+                        <div class="port-info">Almanya | ETA: 28 Eylül 2026</div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📊 İstatistikler</div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Ziyaret Edilen</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Yaklaşan Liman</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+            <div class="card">
+                <div class="card-title">🔔 Bildirimler</div>
+                <div class="setting-row">
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">Liman Geliş Bildirimleri</div>
+                        <div style="font-size: 12px; color: #666;">Geminin limana ulaşması bildir</div>
+                    </div>
+                    <div class="toggle active" onclick="this.classList.toggle('active')">
+                        <div class="toggle-circle"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📍 Konum Takibi</div>
+                <div class="setting-row">
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">Gerçek Zamanlı Takip</div>
+                        <div style="font-size: 12px; color: #666;">Geminin konumunu sürekli takip et</div>
+                    </div>
+                    <div class="toggle active" onclick="this.classList.toggle('active')">
+                        <div class="toggle-circle"></div>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">Otomatik Yenile</div>
+                        <div style="font-size: 12px; color: #666;">Her 30 saniyede verileri yenile</div>
+                    </div>
+                    <div class="toggle active" onclick="this.classList.toggle('active')">
+                        <div class="toggle-circle"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">🔌 API Ayarları</div>
+                <div class="setting-row">
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">Bağlantı Durumu</div>
+                        <div style="font-size: 12px; color: #666;">Backend sunucusu aktif</div>
+                    </div>
+                    <div style="width: 12px; height: 12px; background: #34C759; border-radius: 50%;"></div>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div style="font-weight: bold; margin-bottom: 4px;">WebSocket</div>
+                        <div style="font-size: 12px; color: #666;">Gerçek zamanlı veri aktarımı</div>
+                    </div>
+                    <div style="width: 12px; height: 12px; background: #34C759; border-radius: 50%;"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">ℹ️ Hakkında</div>
+                <div class="row">
+                    <span class="label">Uygulama Versiyonu</span>
+                    <span class="value">1.0.0</span>
+                </div>
+                <div class="row">
+                    <span class="label">GitHub</span>
+                    <span class="value">Açık Kaynak</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let locationData = {
+            latitude: 35.6762,
+            longitude: 139.6503,
+            speed: 0,
+            heading: 0,
+            accuracy: 15
+        };
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        function updateLocation() {
+            // Simulate location update
+            locationData.latitude += (Math.random() - 0.5) * 0.01;
+            locationData.longitude += (Math.random() - 0.5) * 0.01;
+            locationData.speed = Math.random() * 25;
+            locationData.heading = Math.random() * 360;
+            locationData.accuracy = Math.random() * 20 + 5;
+
+            // Update display
+            document.getElementById('latitude').textContent = locationData.latitude.toFixed(4) + '°';
+            document.getElementById('longitude').textContent = locationData.longitude.toFixed(4) + '°';
+            document.getElementById('speed').textContent = locationData.speed.toFixed(1) + ' km/h';
+            document.getElementById('heading').textContent = locationData.heading.toFixed(0) + '°';
+            document.getElementById('accuracy').textContent = '±' + locationData.accuracy.toFixed(1) + ' m';
+
+            // Animate button
+            const btn = event.target;
+            btn.textContent = '✓ Güncellendi!';
+            setTimeout(() => {
+                btn.textContent = '🔄 Konumu Güncelle';
+            }, 2000);
+        }
+
+        // Auto-update location every 30 seconds
+        setInterval(updateLocation, 30000);
+    </script>
+</body>
+</html>
