@@ -3,135 +3,266 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#07111f">
   <title>Liman Takip | MAJESTIC MAERSK</title>
-  <meta name="description" content="MAJESTIC MAERSK ve TGBU6051037 konteyneri için liman, rota ve AIS takip ekranı.">
-  <link rel="preconnect" href="https://unpkg.com">
+  <meta name="description" content="MAJESTIC MAERSK ve TGBU6051037 için AIS, liman, rota ve Türkiye bağlantısı takip ekranı.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    :root{--bg:#06111f;--panel:#0b1b2d;--panel2:#0e2238;--line:#1b3a58;--text:#f5f8fb;--muted:#9db0c4;--blue:#2f8cff;--orange:#ff9f1a;--green:#36d399;--red:#ff5b68;--shadow:0 18px 45px rgba(0,0,0,.28)}
-    *{box-sizing:border-box}html,body{margin:0;background:radial-gradient(circle at 20% 0%,#0d2743 0,#06111f 42%,#040b14 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100%}
-    body{padding:18px}.shell{max-width:1280px;margin:0 auto}.topbar{display:flex;gap:18px;align-items:flex-start;justify-content:space-between;margin-bottom:16px}.brand h1{font-size:clamp(24px,4vw,42px);margin:0 0 6px;letter-spacing:-.03em}.brand p{margin:0;color:var(--muted);font-size:14px}.badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #1c496f;background:#0a1b2c;border-radius:999px;color:#c9ddf2;font-size:12px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 5px rgba(54,211,153,.1)}
-    .grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(320px,.75fr);gap:16px}.card{background:linear-gradient(180deg,rgba(15,34,56,.96),rgba(8,24,40,.96));border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
-    .map-card{overflow:hidden}.map-head{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}.map-head h2,.side h2{font-size:16px;margin:0}.map-sub{font-size:12px;color:var(--muted);margin-top:5px}.actions{display:flex;gap:8px;flex-wrap:wrap}.btn{border:1px solid #295175;background:#102b46;color:#eaf4ff;border-radius:10px;padding:9px 12px;font-weight:700;font-size:12px;cursor:pointer}.btn:hover{background:#173956}.btn.primary{background:var(--blue);border-color:var(--blue)}.btn.primary:hover{filter:brightness(1.07)}
-    #map{height:560px;background:#0b1b2d}.leaflet-control-attribution{font-size:9px!important}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#0b1b2d;color:#fff}.leaflet-popup-content{margin:12px 14px}.leaflet-container{font:inherit}.leaflet-control-zoom a{background:#0b1b2d!important;color:#fff!important;border-color:#1b3a58!important}
-    .legend{display:flex;gap:14px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--line);color:#c2d2e1;font-size:11px}.leg{display:flex;align-items:center;gap:8px}.swatch{width:28px;height:4px;border-radius:4px;background:var(--blue)}.swatch.dashed{background:repeating-linear-gradient(90deg,var(--orange) 0 8px,transparent 8px 14px)}
-    .side{display:flex;flex-direction:column;gap:16px}.side .card{padding:16px}.status-title{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.ship-name{font-size:18px;font-weight:900;letter-spacing:.01em}.muted{color:var(--muted)}.kv{display:grid;grid-template-columns:1fr auto;gap:10px 14px;padding:10px 0;border-bottom:1px solid rgba(50,83,112,.5);font-size:12px}.kv:last-child{border-bottom:none}.kv span:first-child{color:var(--muted)}.kv span:last-child{text-align:right;font-weight:800}.accent{color:#8cc2ff}.warn{color:#ffc071}.ok{color:#64dfb2}.small{font-size:11px}.notice{padding:11px 12px;border-radius:12px;background:#0b2840;border:1px solid #205078;color:#bbd5ee;font-size:11px;line-height:1.45}.container-card{border-color:#5b421d!important}.container-card .status-title{color:#ffd08a}.update-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px}.time{font-size:10px;color:var(--muted)}
-    .ship-icon-wrap{background:transparent;border:none}.ship-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#123b63;border:2px solid #77baff;box-shadow:0 0 0 7px rgba(47,140,255,.17),0 8px 18px rgba(0,0,0,.45);font-size:20px;transform-origin:center}.port-icon{width:18px;height:18px;border-radius:50%;border:3px solid #fff;box-shadow:0 4px 11px rgba(0,0,0,.35)}.port-completed{background:var(--green)}.port-next{background:var(--orange)}.port-planned{background:var(--blue)}.port-unverified{background:#8b96a3}
-    .error{display:none;color:#ffc1c8;background:#3a1620;border:1px solid #6c2535;padding:10px 12px;border-radius:10px;font-size:11px;margin-top:10px}
-    @media(max-width:900px){body{padding:10px}.topbar{flex-direction:column}.grid{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr}.map-head{align-items:flex-start;flex-direction:column}#map{height:520px}}
-    @media(max-width:620px){.side{grid-template-columns:1fr}#map{height:62vh;min-height:430px}.legend{gap:9px}.actions{width:100%}.btn{flex:1}.brand h1{font-size:28px}.map-head{padding:14px}.side .card{padding:14px}}
+    :root{
+      --bg:#050b13;--panel:#0a1422;--panel2:#0d1b2d;--panel3:#102238;--line:#18314c;
+      --text:#f4f8fc;--muted:#8ba0b7;--blue:#39a0ff;--blue2:#1677d2;--cyan:#6fd7ff;
+      --orange:#ffae42;--green:#3bd49f;--red:#ff6678;--shadow:0 24px 70px rgba(0,0,0,.34)
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Manrope,system-ui,sans-serif}
+    body{background:
+      radial-gradient(circle at 15% -10%,rgba(33,120,190,.22),transparent 36%),
+      radial-gradient(circle at 95% 0%,rgba(16,64,108,.28),transparent 30%),
+      linear-gradient(180deg,#07111f 0%,#040a11 100%);padding:20px}
+    button{font:inherit}.shell{max-width:1480px;margin:auto}
+
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:16px}
+    .brandline{display:flex;align-items:center;gap:14px}
+    .logo{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#143b61,#0a2138);border:1px solid #245078;box-shadow:inset 0 1px rgba(255,255,255,.06),0 12px 30px rgba(0,0,0,.28);font-size:24px}
+    .eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.16em;color:#72bfff;font-weight:800;margin-bottom:5px}
+    h1{font-size:clamp(24px,3vw,38px);line-height:1.05;margin:0;letter-spacing:-.035em}
+    .subline{display:flex;gap:9px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:12px}
+    .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 9px;border:1px solid #193755;background:rgba(9,26,44,.7);border-radius:999px;color:#c8d7e6}
+    .pulse{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(59,212,159,.5);animation:pulse 2.2s infinite}
+    @keyframes pulse{70%{box-shadow:0 0 0 8px rgba(59,212,159,0)}100%{box-shadow:0 0 0 0 rgba(59,212,159,0)}}
+    .top-actions{display:flex;align-items:center;gap:10px}
+
+    .btn{appearance:none;border:1px solid #234662;background:#0c2034;color:#e9f4ff;border-radius:11px;padding:10px 13px;font-weight:800;font-size:12px;cursor:pointer;transition:.18s ease;box-shadow:inset 0 1px rgba(255,255,255,.04)}
+    .btn:hover{background:#13304d;border-color:#336486;transform:translateY(-1px)}
+    .btn.primary{background:linear-gradient(180deg,#238ee9,#1473ca);border-color:#39a0ff;box-shadow:0 8px 22px rgba(30,130,215,.24)}
+    .btn.primary:hover{filter:brightness(1.08)}
+
+    .summary-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
+    .metric{min-width:0;background:linear-gradient(180deg,rgba(14,32,53,.96),rgba(7,21,35,.96));border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:0 10px 28px rgba(0,0,0,.14)}
+    .metric-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#728aa2;font-weight:800;margin-bottom:6px}
+    .metric-value{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.metric-value.mono{font-family:"IBM Plex Mono",monospace;font-size:12px}.metric-value.blue{color:#7fc4ff}.metric-value.orange{color:#ffc16d}
+
+    .workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(360px,.72fr);gap:12px}
+    .card{background:linear-gradient(180deg,rgba(13,29,48,.97),rgba(7,20,34,.97));border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+    .map-card{min-width:0}.map-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 15px;border-bottom:1px solid var(--line);background:rgba(7,20,34,.9)}
+    .map-title h2{margin:0;font-size:15px;letter-spacing:-.01em}.map-title p{margin:5px 0 0;color:var(--muted);font-size:11px;line-height:1.5}.map-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+    #map{height:650px;background:#081522}.leaflet-container{font-family:Manrope,sans-serif}.leaflet-control-attribution{font-size:8px!important;background:rgba(4,12,20,.72)!important;color:#8fa6bb!important}.leaflet-control-attribution a{color:#9fcfff!important}.leaflet-control-zoom a{background:#071827!important;color:#e6f2ff!important;border-color:#183b58!important}.leaflet-bar{border:1px solid #183b58!important;box-shadow:0 10px 30px rgba(0,0,0,.24)!important}.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#071827;color:#edf7ff}.leaflet-popup-content-wrapper{border:1px solid #214867;border-radius:12px;box-shadow:0 16px 40px rgba(0,0,0,.38)}.leaflet-popup-content{margin:12px 14px;font-size:12px;line-height:1.55}.leaflet-popup-content b{font-size:13px}.leaflet-tooltip{background:#071827;color:#fff;border:1px solid #214867;box-shadow:0 8px 22px rgba(0,0,0,.25);font-size:11px}
+    .map-footer{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);background:#071522}
+    .legend{display:flex;gap:13px;flex-wrap:wrap;color:#aabed1;font-size:10px}.leg{display:flex;align-items:center;gap:7px}.line-sample{width:28px;height:3px;border-radius:5px;background:var(--blue)}.line-sample.dashed{background:repeating-linear-gradient(90deg,var(--orange) 0 7px,transparent 7px 12px)}
+    .map-source{font-size:9px;color:#657f98;text-align:right}
+
+    .rail{display:flex;flex-direction:column;gap:12px}.panel{padding:15px}.panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px}.panel-title{font-size:15px;font-weight:800}.panel-sub{font-size:10px;color:var(--muted);margin-top:4px}.status-pill{font-size:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;padding:6px 8px;border-radius:999px;border:1px solid #234a68;background:#0b2840;color:#a9d7ff}.status-pill.warn{border-color:#59431f;background:#2a210f;color:#ffd18c}
+    .kv{display:grid;grid-template-columns:minmax(100px,.85fr) minmax(0,1.35fr);gap:12px;padding:9px 0;border-bottom:1px solid rgba(43,71,96,.44);font-size:11px;align-items:start}.kv:last-of-type{border-bottom:0}.kv .k{color:#7f96ac}.kv .v{text-align:right;font-weight:700;color:#edf5fc;overflow-wrap:anywhere}.v.mono{font-family:"IBM Plex Mono",monospace;font-size:10px}.v.blue{color:#85c8ff}.v.orange{color:#ffc26f}
+    .notice{margin-top:10px;border:1px solid #1d4666;background:linear-gradient(180deg,#0b2941,#0a2236);padding:10px 11px;border-radius:10px;color:#b7d4eb;font-size:10px;line-height:1.55}.notice.warn{border-color:#5b421d;background:linear-gradient(180deg,#2b2112,#1d180f);color:#efd0a2}
+    .error{display:none;margin-top:10px;padding:10px;border:1px solid #6e2936;background:#37151d;color:#ffc8d0;border-radius:10px;font-size:10px}
+
+    .freshness{margin-top:11px;display:flex;align-items:center;gap:10px}.fresh-bar{height:6px;flex:1;background:#102a42;border-radius:999px;overflow:hidden}.fresh-fill{height:100%;width:0;background:var(--green);transition:width .3s}.fresh-label{font-size:9px;color:#8da5bb;min-width:96px;text-align:right}
+    .route-progress{margin-top:10px}.route-track{position:relative;height:4px;background:#173049;border-radius:999px;margin:20px 8px 13px}.route-fill{position:absolute;left:0;top:0;bottom:0;width:34%;background:linear-gradient(90deg,#3bd49f,#39a0ff);border-radius:999px}.route-dot{position:absolute;top:50%;width:14px;height:14px;transform:translate(-50%,-50%);border-radius:50%;background:#092033;border:3px solid #6ebfff;box-shadow:0 0 0 4px rgba(57,160,255,.08)}.route-dot.done{border-color:#4dd9a8}.route-dot.next{border-color:#ffae42}.route-dot.unverified{border-style:dashed;border-color:#8093a5}.route-names{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;font-size:8px;color:#70879e;text-align:center}.route-names span:nth-child(1){text-align:left}.route-names span:last-child{text-align:right}
+
+    .ship-marker-shell{background:transparent;border:0}.ship-marker{position:relative;width:46px;height:46px;display:grid;place-items:center}.ship-marker:before{content:"";position:absolute;inset:4px;border-radius:50%;background:rgba(17,111,184,.74);border:1px solid #78c9ff;box-shadow:0 0 0 8px rgba(31,139,219,.13),0 8px 28px rgba(0,0,0,.48)}.ship-arrow{position:relative;z-index:2;color:#fff;font-size:24px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.45));transform-origin:center}
+    .port-shell{background:transparent;border:0}.port{width:18px;height:18px;border-radius:50%;border:3px solid #eef7ff;box-shadow:0 4px 12px rgba(0,0,0,.35)}.port-completed{background:var(--green)}.port-next{background:var(--orange);box-shadow:0 0 0 6px rgba(255,174,66,.12),0 4px 12px rgba(0,0,0,.35)}.port-planned{background:var(--blue)}.port-unverified{background:#697989;border-style:dashed}
+
+    .footnote{margin-top:12px;color:#5f7891;font-size:9px;line-height:1.5;text-align:center}
+    .map-card:fullscreen{background:#06111f}.map-card:fullscreen #map{height:calc(100vh - 118px)}
+
+    @media(max-width:1080px){.summary-strip{grid-template-columns:repeat(3,1fr)}.workspace{grid-template-columns:1fr}.rail{display:grid;grid-template-columns:1fr 1fr}.rail .card:last-child{grid-column:1/-1}#map{height:590px}}
+    @media(max-width:720px){body{padding:10px}.topbar{align-items:flex-start;flex-direction:column}.top-actions{width:100%}.top-actions .btn{flex:1}.summary-strip{grid-template-columns:1fr 1fr}.metric:last-child{grid-column:1/-1}.rail{grid-template-columns:1fr}.rail .card:last-child{grid-column:auto}.map-toolbar{align-items:flex-start;flex-direction:column}.map-actions{width:100%;justify-content:stretch}.map-actions .btn{flex:1}.map-footer{align-items:flex-start;flex-direction:column}.map-source{text-align:left}#map{height:64vh;min-height:470px}.brandline{align-items:flex-start}.logo{width:42px;height:42px}.subline{font-size:10px}.panel{padding:13px}}
+    @media(max-width:430px){.summary-strip{grid-template-columns:1fr 1fr}.metric{padding:10px}.metric-value{font-size:12px}#map{min-height:440px}.map-actions .btn{padding:9px 8px;font-size:10px}.kv{font-size:10px}.route-names{font-size:7px}}
   </style>
 </head>
 <body>
   <main class="shell">
-    <div class="topbar">
-      <div class="brand">
-        <div class="badge"><span class="dot"></span> Liman & rota takip ekranı</div>
-        <h1>MAJESTIC MAERSK</h1>
-        <p>IMO 9619919 · MMSI 219018501 · TGBU6051037 Türkiye bağlantısı</p>
-      </div>
-      <button class="btn primary" id="refreshTop">↻ Konumu Yenile</button>
-    </div>
-
-    <section class="grid">
-      <article class="card map-card">
-        <div class="map-head">
-          <div>
-            <h2>Çin’den Türkiye bağlantısına rota</h2>
-            <div class="map-sub">Mavi düz hat MAJESTIC MAERSK’in yayımlanmış/doğrulanmış rotasını, turuncu kesik hat TGBU6051037 için doğrulanması gereken Türkiye bağlantısını gösterir.</div>
+    <header class="topbar">
+      <div class="brandline">
+        <div class="logo">⚓</div>
+        <div>
+          <div class="eyebrow">Maritime Operations Monitor</div>
+          <h1>MAJESTIC MAERSK</h1>
+          <div class="subline">
+            <span>IMO 9619919</span><span>•</span><span>MMSI 219018501</span>
+            <span class="chip"><i class="pulse"></i> AIS izleme</span>
+            <span class="chip">📦 TGBU6051037</span>
           </div>
-          <div class="actions">
-            <button class="btn" id="findShip">🚢 Gemiyi Bul</button>
-            <button class="btn" id="showRoute">◎ Rotayı Göster</button>
+        </div>
+      </div>
+      <div class="top-actions"><button class="btn primary" id="refreshTop">↻ Veriyi Yenile</button></div>
+    </header>
+
+    <section class="summary-strip">
+      <div class="metric"><div class="metric-label">Gemi durumu</div><div class="metric-value blue" id="mStatus">Seyirde</div></div>
+      <div class="metric"><div class="metric-label">Son AIS</div><div class="metric-value mono" id="mAis">—</div></div>
+      <div class="metric"><div class="metric-label">Hız</div><div class="metric-value" id="mSpeed">—</div></div>
+      <div class="metric"><div class="metric-label">Sıradaki liman</div><div class="metric-value orange" id="mNext">—</div></div>
+      <div class="metric"><div class="metric-label">ETA</div><div class="metric-value mono" id="mEta">—</div></div>
+    </section>
+
+    <section class="workspace">
+      <article class="card map-card">
+        <div class="map-toolbar">
+          <div class="map-title">
+            <h2>Çin → Akdeniz → Türkiye bağlantısı</h2>
+            <p>Mavi rota geminin doğrulanmış ana hattını, turuncu kesik rota konteynerin doğrulama bekleyen Türkiye bağlantısını gösterir.</p>
+          </div>
+          <div class="map-actions">
+            <button class="btn" id="findShip">⌖ Gemiyi Bul</button>
+            <button class="btn" id="showRoute">◎ Tüm Rota</button>
+            <button class="btn" id="toggleLayer">◫ Uydu</button>
             <button class="btn" id="fullscreen">⛶ Tam Ekran</button>
           </div>
         </div>
         <div id="map"></div>
-        <div class="legend">
-          <div class="leg"><span class="swatch"></span> MAJESTIC MAERSK doğrulanmış rota</div>
-          <div class="leg"><span class="swatch dashed"></span> TGBU6051037 doğrulama bekleyen Türkiye bağlantısı</div>
-          <div class="leg">🚢 Son AIS konumu</div>
-          <div class="leg">✓ Tamamlanan liman</div>
-          <div class="leg">◎ Sıradaki liman</div>
+        <div class="map-footer">
+          <div class="legend">
+            <span class="leg"><i class="line-sample"></i> Doğrulanmış gemi rotası</span>
+            <span class="leg"><i class="line-sample dashed"></i> Türkiye bağlantısı / doğrulama bekliyor</span>
+            <span class="leg">🚢 Son AIS</span><span class="leg">● Liman</span>
+          </div>
+          <div class="map-source">Harita: OpenStreetMap / Esri World Imagery · AIS verisi statik doğrulanmış kayıt üzerinden gösterilir.</div>
         </div>
       </article>
 
-      <aside class="side">
-        <section class="card">
-          <div class="status-title"><div><div class="ship-name">🚢 MAJESTIC MAERSK</div><div class="small muted">Gemi durumu</div></div><span class="badge">AIS</span></div>
-          <div class="kv"><span>Son AIS</span><span id="aisTime" class="accent">—</span></div>
-          <div class="kv"><span>Koordinat</span><span id="coords">—</span></div>
-          <div class="kv"><span>Hız</span><span id="speed">—</span></div>
-          <div class="kv"><span>Son liman</span><span id="lastPort">—</span></div>
-          <div class="kv"><span>Sıradaki liman</span><span id="nextPort" class="warn">—</span></div>
-          <div class="kv"><span>ETA</span><span id="eta">—</span></div>
-          <div class="notice" id="aisNote">AIS kaynağı yükleniyor…</div>
-          <div id="loadError" class="error">Veri dosyası okunamadı. Son doğrulanmış konum gösterilemiyor.</div>
+      <aside class="rail">
+        <section class="card panel">
+          <div class="panel-head">
+            <div><div class="panel-title">🚢 Gemi Telemetrisi</div><div class="panel-sub">MAJESTIC MAERSK · IMO 9619919</div></div>
+            <span class="status-pill" id="aisBadge">AIS</span>
+          </div>
+          <div class="kv"><span class="k">Son AIS zamanı</span><span class="v blue" id="aisTime">—</span></div>
+          <div class="kv"><span class="k">Koordinat</span><span class="v mono" id="coords">—</span></div>
+          <div class="kv"><span class="k">Hız / rota</span><span class="v" id="speed">—</span></div>
+          <div class="kv"><span class="k">Son liman</span><span class="v" id="lastPort">—</span></div>
+          <div class="kv"><span class="k">Sıradaki liman</span><span class="v orange" id="nextPort">—</span></div>
+          <div class="kv"><span class="k">Tahmini varış</span><span class="v" id="eta">—</span></div>
+          <div class="freshness"><div class="fresh-bar"><div class="fresh-fill" id="freshFill"></div></div><div class="fresh-label" id="freshLabel">AIS yaşı: —</div></div>
+          <div class="notice" id="aisNote">AIS verisi yükleniyor…</div>
+          <div id="loadError" class="error">Veri kaynağı okunamadı. Haritada eski kayıt kalmış olabilir.</div>
         </section>
 
-        <section class="card container-card">
-          <div class="status-title"><div><div class="ship-name">📦 TGBU6051037</div><div class="small muted">Konteyner durumu</div></div><span class="badge">Türkiye</span></div>
-          <div class="kv"><span>Son hareket</span><span id="cEvent">—</span></div>
-          <div class="kv"><span>Bulunduğu gemi / liman</span><span id="cLocation">—</span></div>
-          <div class="kv"><span>Sıradaki liman</span><span id="cNext">—</span></div>
-          <div class="kv"><span>Aktarma gemisi</span><span id="cTransfer" class="warn">—</span></div>
-          <div class="kv"><span>Port Said ETA</span><span id="cPortSaid">—</span></div>
-          <div class="kv"><span>Mersin ETA</span><span id="cMersin" class="warn">—</span></div>
-          <div class="notice">Doğrulanmamış konteyner aktarması veya ETA bilgisi kesinmiş gibi gösterilmez.</div>
+        <section class="card panel">
+          <div class="panel-head">
+            <div><div class="panel-title">📦 Konteyner Zinciri</div><div class="panel-sub">TGBU6051037 · Türkiye teslim bağlantısı</div></div>
+            <span class="status-pill warn">Takip</span>
+          </div>
+          <div class="kv"><span class="k">Son hareket</span><span class="v" id="cEvent">—</span></div>
+          <div class="kv"><span class="k">Bulunduğu gemi / liman</span><span class="v" id="cLocation">—</span></div>
+          <div class="kv"><span class="k">Sıradaki liman</span><span class="v" id="cNext">—</span></div>
+          <div class="kv"><span class="k">Aktarma gemisi</span><span class="v orange" id="cTransfer">—</span></div>
+          <div class="kv"><span class="k">Port Said ETA</span><span class="v" id="cPortSaid">—</span></div>
+          <div class="kv"><span class="k">Mersin ETA</span><span class="v orange" id="cMersin">—</span></div>
+          <div class="notice warn">Aktarma gemisi veya Mersin ETA doğrulanmadıysa sistem tahmin üretmez; “henüz doğrulanmadı” olarak gösterir.</div>
         </section>
 
-        <section class="card">
-          <div class="status-title"><div><h2>Veri durumu</h2><div class="small muted">Son uygulama güncellemesi</div></div></div>
-          <div class="update-row"><span class="time" id="updatedAt">—</span><button class="btn primary" id="refreshSide">↻ Yenile</button></div>
+        <section class="card panel">
+          <div class="panel-head"><div><div class="panel-title">Rota İlerlemesi</div><div class="panel-sub">Doğrulanmış liman zinciri ve Türkiye bağlantısı</div></div></div>
+          <div class="route-progress">
+            <div class="route-track">
+              <div class="route-fill" id="routeFill"></div>
+              <i class="route-dot done" style="left:0%"></i>
+              <i class="route-dot next" style="left:34%"></i>
+              <i class="route-dot" style="left:68%"></i>
+              <i class="route-dot unverified" style="left:100%"></i>
+            </div>
+            <div class="route-names"><span>Ningbo</span><span>Tanjung Pelepas</span><span>Port Said</span><span>Mersin</span></div>
+          </div>
+          <div class="kv"><span class="k">Uygulama veri zamanı</span><span class="v mono" id="updatedAt">—</span></div>
+          <button class="btn primary" style="width:100%;margin-top:10px" id="refreshSide">↻ Son veriyi tekrar yükle</button>
         </section>
       </aside>
     </section>
+
+    <div class="footnote">Bu ekran navigasyon sistemi değildir. AIS sinyali kıyı kapsaması, uydu gecikmesi ve veri sağlayıcı güncelleme aralıkları nedeniyle gecikebilir.</div>
   </main>
 
 <script>
-  const map = L.map('map',{zoomControl:true,worldCopyJump:true}).setView([18,74],3);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(map);
+  const streetLayer=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'});
+  const satelliteLayer=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Tiles © Esri'});
+  const map=L.map('map',{zoomControl:true,worldCopyJump:true,layers:[streetLayer],preferCanvas:true}).setView([17,75],3);
+  let satellite=false;
 
-  let vesselData=null, shipMarker=null, routeLine=null, containerLine=null, portMarkers=[];
+  let vesselData=null,shipMarker=null,routeLine=null,containerLine=null,portMarkers=[];
   const $=id=>document.getElementById(id);
-  const fmt=(iso,zone='Europe/Istanbul')=>{if(!iso)return 'Henüz doğrulanmadı';try{return new Intl.DateTimeFormat('tr-TR',{dateStyle:'medium',timeStyle:'short',timeZone:zone}).format(new Date(iso));}catch(e){return iso}};
-  const shipIcon=(course=0)=>L.divIcon({className:'ship-icon-wrap',html:`<div class="ship-icon" style="transform:rotate(${course||0}deg)">▲</div>`,iconSize:[38,38],iconAnchor:[19,19]});
-  const portIcon=status=>L.divIcon({className:'',html:`<div class="port-icon port-${status}"></div>`,iconSize:[18,18],iconAnchor:[9,9]});
+  const fmt=(iso,zone='Europe/Istanbul')=>{if(!iso)return'Henüz doğrulanmadı';try{return new Intl.DateTimeFormat('tr-TR',{dateStyle:'medium',timeStyle:'short',timeZone:zone}).format(new Date(iso));}catch{return iso}};
+  const esc=s=>String(s??'—').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const shipIcon=(course=0)=>L.divIcon({className:'ship-marker-shell',html:`<div class="ship-marker"><div class="ship-arrow" style="transform:rotate(${Number(course)||0}deg)">▲</div></div>`,iconSize:[46,46],iconAnchor:[23,23]});
+  const portIcon=status=>L.divIcon({className:'port-shell',html:`<div class="port port-${status}"></div>`,iconSize:[18,18],iconAnchor:[9,9]});
 
-  function clearLayers(){if(shipMarker)map.removeLayer(shipMarker);if(routeLine)map.removeLayer(routeLine);if(containerLine)map.removeLayer(containerLine);portMarkers.forEach(m=>map.removeLayer(m));portMarkers=[];}
+  function ageInfo(iso){
+    if(!iso)return{hours:null,label:'AIS yaşı: bilinmiyor',pct:0,state:'warn'};
+    const h=Math.max(0,(Date.now()-new Date(iso).getTime())/36e5);
+    let label=h<1?`AIS yaşı: ${Math.round(h*60)} dk`:h<48?`AIS yaşı: ${Math.round(h)} sa`:`AIS yaşı: ${Math.round(h/24)} gün`;
+    return{hours:h,label,pct:Math.max(5,100-Math.min(h,72)/72*100),state:h<=6?'ok':h<=24?'warn':'stale'};
+  }
+
+  function seaRoute(v){
+    return [
+      [29.87,121.55],[28.5,121.0],[25.6,119.7],[22.4,117.0],[18.1,113.6],[13.6,111.0],[9.0,108.4],[5.2,105.2],[2.2,103.2],[1.36,103.55],
+      [3.0,99.0],[5.0,94.0],[7.0,88.0],[6.2,82.0],[6.0,78.0],[8.0,72.0],[10.5,65.0],[12.2,58.0],[12.5,50.0],[12.7,45.2],[15.2,42.0],[19.0,39.1],[23.0,37.0],[27.7,34.5],[29.95,32.55],[31.22,32.35]
+    ];
+  }
+
+  function clearLayers(){
+    [shipMarker,routeLine,containerLine].forEach(x=>{if(x)map.removeLayer(x)});portMarkers.forEach(m=>map.removeLayer(m));portMarkers=[];
+  }
+
+  function statusText(status){return status==='completed'?'Tamamlandı':status==='next'?'Sıradaki liman':status==='unverified'?'Doğrulama bekliyor':'Planlandı'};
+
   function draw(data){
-    clearLayers(); vesselData=data;
-    const v=data.vessel,c=data.container,route=data.route||[];
-    $('aisTime').textContent=fmt(v.positionTime,'Europe/Istanbul');
-    $('coords').textContent=`${Number(v.lat).toFixed(4)}°, ${Number(v.lon).toFixed(4)}°`;
-    $('speed').textContent=v.speedKn!=null?`${v.speedKn} kn`:'—';
+    clearLayers();vesselData=data;
+    const v=data.vessel||{},c=data.container||{},route=data.route||[];
+    const age=ageInfo(v.positionTime);
+
+    $('aisTime').textContent=fmt(v.positionTime);
+    $('coords').textContent=(Number.isFinite(Number(v.lat))&&Number.isFinite(Number(v.lon)))?`${Number(v.lat).toFixed(4)}°, ${Number(v.lon).toFixed(4)}°`:'—';
+    $('speed').textContent=`${v.speedKn??'—'} kn · COG ${v.course??'—'}°`;
     $('lastPort').textContent=v.lastPort||'—';$('nextPort').textContent=v.nextPort||'—';$('eta').textContent=fmt(v.eta,'Asia/Kuala_Lumpur');
-    $('aisNote').textContent=`Kaynak: ${v.positionSource||'Açık AIS'} · ${v.etaNote||''}`;
-    $('cEvent').textContent=c.lastEvent||'—';$('cLocation').textContent=c.location||'—';$('cNext').textContent=c.nextPort||'—';$('cTransfer').textContent=c.transferVessel||'—';$('cPortSaid').textContent=c.portSaidEta||'—';$('cMersin').textContent=c.mersinEta||'—';
-    $('updatedAt').textContent=`Veri dosyası: ${fmt(data.updatedAt,'Europe/Istanbul')}`;
+    $('aisNote').textContent=`Kaynak: ${v.positionSource||'Açık AIS'} · ${v.etaNote||'ETA sağlayıcıya göre değişebilir.'}`;
+    $('freshLabel').textContent=age.label;$('freshFill').style.width=`${age.pct}%`;$('freshFill').style.background=age.state==='ok'?'#3bd49f':age.state==='warn'?'#ffae42':'#ff6678';
+    $('aisBadge').textContent=age.state==='stale'?'AIS ESKİ':'AIS';$('aisBadge').className='status-pill'+(age.state==='stale'?' warn':'');
 
-    shipMarker=L.marker([v.lat,v.lon],{icon:shipIcon(v.course),zIndexOffset:1000}).addTo(map).bindPopup(`<b>MAJESTIC MAERSK</b><br>Son AIS: ${fmt(v.positionTime,'Europe/Istanbul')}<br>Hız: ${v.speedKn??'—'} kn<br>Hedef: ${v.nextPort||'—'}<br>ETA: ${fmt(v.eta,'Asia/Kuala_Lumpur')}`);
+    $('mAis').textContent=fmt(v.positionTime);$('mSpeed').textContent=v.speedKn!=null?`${v.speedKn} kn`:'—';$('mNext').textContent=v.nextPort||'—';$('mEta').textContent=fmt(v.eta,'Asia/Kuala_Lumpur');$('mStatus').textContent=v.speedKn>1?'Seyirde':'Düşük hız / liman çevresi';
 
-    route.forEach(p=>{const m=L.marker([p.lat,p.lon],{icon:portIcon(p.status)}).addTo(map).bindPopup(`<b>${p.name}</b><br>${p.country}<br>Durum: ${p.status==='completed'?'Tamamlandı':p.status==='next'?'Sıradaki liman':p.status==='unverified'?'Doğrulama bekliyor':'Planlandı'}`);portMarkers.push(m)});
-    const confirmed=route.filter(p=>p.status!=='unverified').map(p=>[p.lat,p.lon]);
-    if(confirmed.length>1)routeLine=L.polyline(confirmed,{color:'#2f8cff',weight:4,opacity:.95}).addTo(map);
-    const ps=route.find(p=>p.name.includes('Port Said')),me=route.find(p=>p.name==='Mersin');
-    if(ps&&me)containerLine=L.polyline([[ps.lat,ps.lon],[me.lat,me.lon]],{color:'#ff9f1a',weight:4,dashArray:'10 10',opacity:.95}).addTo(map).bindTooltip('TGBU6051037 – Türkiye bağlantısı / doğrulama bekleniyor');
+    $('cEvent').textContent=c.lastEvent||'—';$('cLocation').textContent=c.location||'—';$('cNext').textContent=c.nextPort||'—';$('cTransfer').textContent=c.transferVessel||'—';$('cPortSaid').textContent=c.portSaidEta||'—';$('cMersin').textContent=c.mersinEta||'—';$('updatedAt').textContent=fmt(data.updatedAt);
+
+    if(Number.isFinite(Number(v.lat))&&Number.isFinite(Number(v.lon))){
+      shipMarker=L.marker([Number(v.lat),Number(v.lon)],{icon:shipIcon(v.course),zIndexOffset:1200}).addTo(map).bindPopup(`<b>🚢 MAJESTIC MAERSK</b><br>Son AIS: ${esc(fmt(v.positionTime))}<br>Hız: ${esc(v.speedKn)} kn · COG ${esc(v.course)}°<br>Hedef: ${esc(v.nextPort)}<br>ETA: ${esc(fmt(v.eta,'Asia/Kuala_Lumpur'))}<br><span style="color:#8ba0b7">${esc(age.label)}</span>`);
+    }
+
+    route.forEach(p=>{
+      const m=L.marker([p.lat,p.lon],{icon:portIcon(p.status)}).addTo(map).bindPopup(`<b>${esc(p.name)}</b><br>${esc(p.country)}<br>${statusText(p.status)}`);
+      portMarkers.push(m);
+    });
+
+    const sea=seaRoute(v);
+    routeLine=L.polyline(sea,{color:'#39a0ff',weight:4,opacity:.88,smoothFactor:1.2,lineCap:'round'}).addTo(map);
+    L.polyline(sea,{color:'#8ed2ff',weight:1,opacity:.55,dashArray:'2 8',interactive:false}).addTo(map);
+
+    const ps=route.find(p=>String(p.name).includes('Port Said')),me=route.find(p=>p.name==='Mersin');
+    if(ps&&me){
+      const turkeyPath=[[ps.lat,ps.lon],[32.5,32.0],[34.2,31.8],[35.5,32.5],[36.3,33.8],[me.lat,me.lon]];
+      containerLine=L.polyline(turkeyPath,{color:'#ffae42',weight:4,dashArray:'10 9',opacity:.95,lineCap:'round'}).addTo(map).bindTooltip('TGBU6051037 · Türkiye bağlantısı / doğrulama bekleniyor');
+    }
   }
 
   async function loadData(focus=false){
     $('loadError').style.display='none';
-    try{const r=await fetch(`data/vessel.json?t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error('http');const d=await r.json();draw(d);if(focus)focusShip();}
-    catch(e){$('loadError').style.display='block';console.error(e)}
+    try{
+      const r=await fetch(`data/vessel.json?t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);
+      const d=await r.json();draw(d);if(focus)focusShip();
+    }catch(e){$('loadError').style.display='block';console.error(e)}
   }
-  function focusShip(){if(!vesselData||!shipMarker)return;map.setView([vesselData.vessel.lat,vesselData.vessel.lon],6,{animate:true});shipMarker.openPopup();}
-  function fitRoute(){if(!vesselData)return;const pts=(vesselData.route||[]).map(p=>[p.lat,p.lon]);pts.push([vesselData.vessel.lat,vesselData.vessel.lon]);map.fitBounds(pts,{padding:[30,30]});}
-  async function fullscreenMap(){const el=document.querySelector('.map-card');if(!document.fullscreenElement){await el.requestFullscreen?.();setTimeout(()=>map.invalidateSize(),250)}else{await document.exitFullscreen?.();setTimeout(()=>map.invalidateSize(),250)}}
 
-  $('refreshTop').onclick=()=>loadData(true);$('refreshSide').onclick=()=>loadData(false);$('findShip').onclick=focusShip;$('showRoute').onclick=fitRoute;$('fullscreen').onclick=fullscreenMap;
-  document.addEventListener('fullscreenchange',()=>setTimeout(()=>map.invalidateSize(),250));
-  loadData().then(()=>setTimeout(fitRoute,200));
+  function focusShip(){if(!vesselData||!shipMarker)return;map.flyTo([vesselData.vessel.lat,vesselData.vessel.lon],6,{duration:1.1});setTimeout(()=>shipMarker.openPopup(),850)}
+  function fitRoute(){if(!vesselData)return;const pts=[[29.87,121.55],[1.36,103.55],[31.22,32.35],[36.77,34.65]];if(vesselData.vessel)pts.push([vesselData.vessel.lat,vesselData.vessel.lon]);map.fitBounds(pts,{padding:[28,28],maxZoom:4})}
+  async function fullscreenMap(){const el=document.querySelector('.map-card');if(!document.fullscreenElement){await el.requestFullscreen?.()}else{await document.exitFullscreen?.()}setTimeout(()=>map.invalidateSize(),260)}
+  function toggleBasemap(){satellite=!satellite;if(satellite){map.removeLayer(streetLayer);satelliteLayer.addTo(map);$('toggleLayer').textContent='▦ Harita'}else{map.removeLayer(satelliteLayer);streetLayer.addTo(map);$('toggleLayer').textContent='◫ Uydu'}}
+
+  $('refreshTop').onclick=()=>loadData(true);$('refreshSide').onclick=()=>loadData(false);$('findShip').onclick=focusShip;$('showRoute').onclick=fitRoute;$('toggleLayer').onclick=toggleBasemap;$('fullscreen').onclick=fullscreenMap;
+  document.addEventListener('fullscreenchange',()=>setTimeout(()=>map.invalidateSize(),260));
+  loadData().then(()=>setTimeout(fitRoute,260));
 </script>
 </body>
 </html>
