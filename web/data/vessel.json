@@ -1,0 +1,34 @@
+{
+  "updatedAt": "2026-09-16T11:40:00Z",
+  "vessel": {
+    "name": "MAJESTIC MAERSK",
+    "imo": "9619919",
+    "mmsi": "219018501",
+    "lat": 25.53273,
+    "lon": 121.11547,
+    "positionTime": "2026-09-13T08:31:00Z",
+    "positionSource": "MyShipTracking terrestrial AIS (open web)",
+    "speedKn": 17.6,
+    "course": 231.7,
+    "lastPort": "Meishan / Ningbo, Çin",
+    "atd": "2026-09-12T11:14:00Z",
+    "nextPort": "Tanjung Pelepas, Malezya",
+    "eta": "2026-09-17T14:00:00+08:00",
+    "etaNote": "VesselFinder açık AIS ETA; kaynaklar arasında saat farkı olabilir"
+  },
+  "container": {
+    "number": "TGBU6051037",
+    "lastEvent": "Açık kaynaklarda yeni doğrulanmış konteyner olayı yok",
+    "location": "MAJESTIC MAERSK üzerinde olduğu varsayımı doğrulama bekliyor",
+    "nextPort": "Port Said bağlantısı izleniyor",
+    "transferVessel": "Henüz doğrulanmadı",
+    "portSaidEta": "Henüz konteyner bazında doğrulanmadı",
+    "mersinEta": "Henüz doğrulanmadı"
+  },
+  "route": [
+    {"name":"Ningbo / Meishan","country":"Çin","lat":29.87,"lon":121.55,"status":"completed"},
+    {"name":"Tanjung Pelepas","country":"Malezya","lat":1.36,"lon":103.55,"status":"next"},
+    {"name":"Port Said East","country":"Mısır","lat":31.22,"lon":32.35,"status":"planned"},
+    {"name":"Mersin","country":"Türkiye","lat":36.77,"lon":34.65,"status":"unverified"}
+  ]
+}
