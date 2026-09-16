@@ -3,115 +3,174 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="theme-color" content="#0b4f82">
-  <title>MAJESTIC MAERSK | Canlı Rota Takibi</title>
-  <meta name="description" content="MAJESTIC MAERSK gemisinin son AIS konumu, sıradaki limanı ve TGBU6051037 konteynerinin Türkiye bağlantısı.">
+  <meta name="theme-color" content="#071b2b">
+  <title>TURCON LAZER | Gemi Takip</title>
+  <meta name="description" content="TURCON LAZER Gemi Takip — MAJESTIC MAERSK ve TGBU6051037 konteyneri için anlaşılır rota ve son AIS konum ekranı.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
-    :root{--ocean:#0b5f98;--deep:#07385d;--sky:#eaf7ff;--card:#fff;--ink:#0b2032;--muted:#5e7181;--blue:#1788dc;--orange:#ff9f1c;--green:#1fb981;--red:#d93b4b;--line:#dceaf4}
-    *{box-sizing:border-box}html,body{margin:0;font-family:Manrope,system-ui,sans-serif;background:#f3f9fd;color:var(--ink)}button{font:inherit}
-    body{min-height:100vh;background:linear-gradient(180deg,#dff3ff 0,#f8fcff 52%,#eef7fb 100%)}
-    .page{max-width:1500px;margin:auto;padding:16px}
-    .hero{background:linear-gradient(135deg,#084c79 0%,#0b6fae 56%,#1496d4 100%);color:white;border-radius:24px;padding:20px 22px;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(260px,.6fr);gap:18px;align-items:center;box-shadow:0 16px 40px rgba(10,79,126,.2)}
-    .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:800;opacity:.8}.hero h1{margin:5px 0 9px;font-size:clamp(28px,4vw,48px);line-height:1}.ids{font-size:12px;opacity:.9}
-    .destination{margin-top:18px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);border-radius:18px;padding:14px 16px;display:flex;gap:12px;align-items:center}.destination .arrow{font-size:30px}.destination small{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.12em;opacity:.75;font-weight:800}.destination strong{display:block;font-size:clamp(18px,2.4vw,28px);margin-top:2px}
-    .freshbox{background:white;color:var(--ink);border-radius:18px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.12)}.freshbox .label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:800;color:#6d8798}.freshbox .time{font-size:18px;font-weight:800;margin-top:4px}.freshbox .age{margin-top:8px;display:inline-flex;padding:7px 10px;border-radius:999px;background:#e9f8f1;color:#137657;font-size:11px;font-weight:800}.freshbox .age.stale{background:#fff1e8;color:#a04e13}.refresh{margin-top:12px;width:100%;border:0;border-radius:12px;background:#0b6fae;color:#fff;padding:11px;font-weight:800;cursor:pointer}
+    :root{
+      --navy:#071b2b;--navy2:#0b2d43;--teal:#13b8bd;--cyan:#37d6ff;--orange:#ff9f1c;
+      --green:#20b879;--blue:#268ee6;--gray:#8193a2;--white:#ffffff;--ink:#102c3d;
+      --muted:#6f8290;--soft:#f2f8fb;--line:#d7e8ef;--shadow:0 18px 50px rgba(20,65,90,.13)
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;font-family:Manrope,system-ui,sans-serif;color:var(--ink);background:#eef7fa}
+    body{background:
+      linear-gradient(rgba(7,27,43,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(7,27,43,.035) 1px,transparent 1px),
+      linear-gradient(180deg,#e9f7fb 0%,#f9fcfd 54%,#edf6f9 100%);
+      background-size:28px 28px,28px 28px,auto
+    }
+    button{font:inherit}.page{max-width:1540px;margin:auto;padding:12px}
 
-    .mapcard{margin-top:14px;background:white;border-radius:24px;overflow:hidden;box-shadow:0 15px 38px rgba(48,92,122,.12);border:1px solid #d8ebf6}.mapbar{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 16px}.mapbar h2{margin:0;font-size:16px}.mapbar p{margin:4px 0 0;font-size:11px;color:var(--muted)}.mapactions{display:flex;gap:7px;flex-wrap:wrap}.btn{border:1px solid #c9dfed;background:#f5fbff;color:#174a69;border-radius:11px;padding:9px 11px;font-size:11px;font-weight:800;cursor:pointer}.btn.primary{background:#0b6fae;color:#fff;border-color:#0b6fae}
-    #map{height:570px;background:#cdefff}.leaflet-container{font-family:Manrope,sans-serif}.leaflet-tooltip{background:#fff;color:#132b3b;border:1px solid #bcd6e7;box-shadow:0 6px 20px rgba(20,70,100,.14);font-size:11px;font-weight:800;border-radius:8px}.leaflet-popup-content-wrapper{border-radius:14px}.leaflet-popup-content{font-size:12px;line-height:1.6}.leaflet-control-attribution{font-size:8px!important}
-    .shipwrap{background:transparent;border:0}.shipbubble{width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:#0d6ba7;border:4px solid #fff;box-shadow:0 0 0 9px rgba(24,136,220,.18),0 10px 28px rgba(0,0,0,.28);font-size:31px}.nowlabel{background:#0d6ba7!important;color:#fff!important;border:0!important}.portwrap{background:transparent;border:0}.portdot{width:24px;height:24px;border-radius:50%;border:4px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.22)}.done{background:var(--green)}.next{background:var(--orange);box-shadow:0 0 0 7px rgba(255,159,28,.2),0 4px 12px rgba(0,0,0,.22)}.planned{background:var(--blue)}.unverified{background:#8393a1;border-style:dashed}
+    .brandbar{background:var(--navy);border-radius:22px;padding:15px 18px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:16px;box-shadow:0 16px 42px rgba(7,27,43,.24);position:relative;overflow:hidden}
+    .brandbar:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,transparent 0,var(--cyan) 20%,var(--orange) 72%,transparent 100%);box-shadow:0 0 16px rgba(55,214,255,.8)}
+    .brand{display:flex;align-items:center;gap:13px}.logo{width:48px;height:48px;border-radius:13px;background:linear-gradient(145deg,#0e4864,#071b2b);border:1px solid #236179;display:grid;place-items:center;font-weight:900;font-size:17px;letter-spacing:-.04em;box-shadow:inset 0 1px rgba(255,255,255,.08)}
+    .brand small{display:block;color:#7edff1;font-size:9px;letter-spacing:.14em;text-transform:uppercase;font-weight:800}.brand h1{font-size:clamp(20px,3vw,31px);margin:2px 0 0;letter-spacing:-.03em}.ship-id{text-align:right;font-size:10px;color:#9fb9c7;line-height:1.6}.ship-id strong{color:#fff;font-size:12px}
 
-    .journey{margin-top:14px;background:white;border:1px solid #d8ebf6;border-radius:24px;padding:18px;box-shadow:0 14px 34px rgba(48,92,122,.1)}.journey h2{margin:0 0 6px;font-size:18px}.journey-sub{font-size:11px;color:var(--muted);margin-bottom:18px}.stops{display:grid;grid-template-columns:repeat(4,1fr);gap:0;align-items:start}.stop{position:relative;text-align:center;padding:0 8px}.stop:not(:last-child):after{content:"→";position:absolute;right:-8px;top:17px;color:#7ba3bb;font-size:24px;font-weight:800}.circle{width:42px;height:42px;border-radius:50%;margin:0 auto 9px;display:grid;place-items:center;color:white;font-weight:800;background:#7391a3;border:4px solid #e8f1f7}.stop.done .circle{background:var(--green)}.stop.next .circle{background:var(--orange);box-shadow:0 0 0 7px rgba(255,159,28,.15)}.stop.planned .circle{background:var(--blue)}.stop.unverified .circle{background:#84939d}.stop-name{font-size:12px;font-weight:800}.stop-state{font-size:9px;color:var(--muted);margin-top:3px}.stop.next .stop-state{color:#b45b00;font-weight:800}
+    .headline-grid{display:grid;grid-template-columns:1.45fr .75fr;gap:10px;margin-top:10px}
+    .next-stop,.location-time{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+    .next-stop{padding:16px 18px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;position:relative;overflow:hidden}.next-stop:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--orange)}
+    .next-icon{width:54px;height:54px;border-radius:16px;background:#fff4e4;display:grid;place-items:center;font-size:29px}.next-stop .eyebrow,.location-time .eyebrow{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:#7d919e;font-weight:800}.next-stop strong{display:block;font-size:clamp(20px,3vw,34px);margin-top:2px;line-height:1.05}.next-stop .arrow{font-size:30px;color:var(--orange);font-weight:900}.next-stop .sub{font-size:10px;color:#718493;margin-top:5px}
+    .location-time{padding:15px 17px;position:relative;overflow:hidden}.location-time:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--teal)}.location-time .time{font-size:17px;font-weight:800;margin-top:5px}.age{display:inline-flex;margin-top:8px;padding:7px 10px;border-radius:999px;background:#e7f8f1;color:#147153;font-size:10px;font-weight:800}.age.stale{background:#fff0e6;color:#a34f14}.age.danger{background:#ffe9ec;color:#a52d3a}.time-note{margin-top:7px;font-size:9px;color:#718492;line-height:1.45}.refresh{margin-top:9px;width:100%;border:0;border-radius:10px;background:var(--navy);color:#fff;padding:9px 10px;font-size:10px;font-weight:800;cursor:pointer}
 
-    .facts{margin-top:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.fact{background:white;border:1px solid #d8ebf6;border-radius:18px;padding:14px;box-shadow:0 10px 28px rgba(48,92,122,.08)}.fact .k{font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:#7890a2;font-weight:800}.fact .v{font-size:14px;font-weight:800;margin-top:5px;line-height:1.35}.warning{color:#a55c13}.ok{color:#167c5d}
-    .container{margin-top:10px;background:#fff8eb;border:1px solid #f3d8a2;border-radius:18px;padding:14px 16px;font-size:11px;color:#6f5429;display:flex;gap:10px;align-items:flex-start}.container strong{display:block;color:#4e3b1d;margin-bottom:2px}
-    .note{margin:12px 0 4px;text-align:center;color:#718696;font-size:9px}
+    .map-card{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:22px;overflow:hidden;box-shadow:var(--shadow)}
+    .map-head{padding:11px 13px;display:flex;justify-content:space-between;align-items:center;gap:12px}.map-head h2{margin:0;font-size:16px}.map-head p{margin:3px 0 0;font-size:9px;color:var(--muted)}.actions{display:flex;gap:6px;flex-wrap:wrap}.btn{border:1px solid #c8dde7;background:#f7fbfd;color:#164860;border-radius:10px;padding:8px 10px;font-size:9px;font-weight:800;cursor:pointer}.btn.primary{background:var(--navy);border-color:var(--navy);color:#fff}
+    .map-wrap{position:relative}.explain{position:absolute;left:14px;top:14px;z-index:500;background:rgba(7,27,43,.93);color:#fff;border-radius:15px;padding:10px 12px;max-width:285px;box-shadow:0 10px 28px rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.12)}.explain small{display:block;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:#7ee6f5;font-weight:800}.explain strong{display:block;margin-top:2px;font-size:13px}.explain span{display:block;margin-top:3px;font-size:9px;color:#b7cbd5;line-height:1.4}
+    #map{height:610px;background:#ccecf5}.leaflet-container{font-family:Manrope,system-ui,sans-serif}.leaflet-control-attribution{font-size:8px!important}.leaflet-popup-content-wrapper{border-radius:13px}.leaflet-popup-content{font-size:11px;line-height:1.55}.leaflet-tooltip{font-size:9px;font-weight:800;border:0;border-radius:8px;box-shadow:0 5px 16px rgba(0,0,0,.14)}
+    .shipwrap,.portwrap{background:transparent;border:0}.shipbubble{width:64px;height:64px;border-radius:18px;display:grid;place-items:center;background:var(--navy);border:4px solid #fff;box-shadow:0 0 0 9px rgba(19,184,189,.2),0 12px 30px rgba(0,0,0,.25);font-size:31px}.lastlabel{background:var(--navy)!important;color:#fff!important}.nextlabel{background:var(--orange)!important;color:#fff!important}.portdot{width:22px;height:22px;border-radius:50%;border:4px solid white;box-shadow:0 4px 10px rgba(0,0,0,.18)}.done{background:var(--green)}.next{background:var(--orange);box-shadow:0 0 0 7px rgba(255,159,28,.18),0 4px 10px rgba(0,0,0,.18)}.planned{background:var(--blue)}.unverified{background:#8797a3;border-style:dashed}
+    .legend{display:flex;gap:13px;flex-wrap:wrap;padding:9px 12px;border-top:1px solid #e1edf2;background:#fbfdfe;font-size:9px;color:#647d8b}.leg{display:flex;align-items:center;gap:5px}.sample{width:25px;height:4px;border-radius:3px}.s-green{background:var(--green)}.s-orange{background:var(--orange)}.s-blue{background:var(--blue)}.s-gray{background:repeating-linear-gradient(90deg,#8797a3 0 6px,transparent 6px 10px)}
 
-    @media(max-width:900px){.hero{grid-template-columns:1fr}.facts{grid-template-columns:1fr 1fr}#map{height:540px}.mapbar{align-items:flex-start;flex-direction:column}.mapactions{width:100%}.mapactions .btn{flex:1}}
-    @media(max-width:620px){.page{padding:8px}.hero,.mapcard,.journey{border-radius:18px}.hero{padding:16px}.destination strong{font-size:20px}#map{height:58vh;min-height:440px}.stops{grid-template-columns:1fr}.stop{text-align:left;display:grid;grid-template-columns:46px 1fr;column-gap:10px;align-items:center;margin:8px 0}.circle{margin:0}.stop:not(:last-child):after{content:"↓";left:13px;right:auto;top:43px}.stop-name,.stop-state{grid-column:2}.facts{grid-template-columns:1fr 1fr}.mapactions .btn{font-size:10px;padding:8px}.shipbubble{width:54px;height:54px;font-size:27px}}
+    .journey{margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:22px;padding:14px;box-shadow:var(--shadow)}.journey-head{display:flex;justify-content:space-between;gap:10px;align-items:end;margin-bottom:12px}.journey h2{margin:0;font-size:16px}.journey p{margin:0;font-size:9px;color:var(--muted)}
+    .story{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.step{position:relative;border:1px solid #dceaf0;border-radius:14px;padding:11px;background:#fbfdfe;min-height:112px}.step:not(:last-child):after{content:"→";position:absolute;right:-15px;top:38px;z-index:3;color:#8ca7b5;font-size:21px;font-weight:800}.bubble{width:35px;height:35px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:900;margin-bottom:7px}.step.done .bubble{background:var(--green)}.step.now .bubble{background:var(--navy)}.step.next .bubble{background:var(--orange)}.step.plan .bubble{background:var(--blue)}.step.wait .bubble{background:#8797a3}.step.now{background:#eefafd;border-color:#bfe9eb}.step.next{background:#fff8ed;border-color:#f1d7a9}.step small{font-size:7px;text-transform:uppercase;letter-spacing:.08em;color:#8295a1;font-weight:800}.step strong{display:block;font-size:11px;margin-top:2px}.step span{display:block;font-size:8px;color:#6d8290;margin-top:3px;line-height:1.38}
+
+    .info-grid{margin-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.info{background:#fff;border:1px solid var(--line);border-radius:15px;padding:11px 12px}.info small{display:block;font-size:7px;text-transform:uppercase;letter-spacing:.08em;color:#8295a1;font-weight:800}.info strong{display:block;font-size:12px;margin-top:4px;line-height:1.35}.info.orange strong{color:#a95d0e}.info.teal strong{color:#0a777b}
+    .cargo{margin-top:8px;border-radius:15px;padding:11px 13px;background:#fff8e9;border:1px solid #efd5a2;display:flex;gap:10px;align-items:flex-start}.cargo-icon{font-size:22px}.cargo small{display:block;font-size:7px;text-transform:uppercase;letter-spacing:.08em;color:#967642;font-weight:800}.cargo strong{display:block;font-size:11px;margin-top:2px}.cargo span{display:block;font-size:9px;color:#765e36;margin-top:3px;line-height:1.42}
+    .footer{text-align:center;font-size:8px;color:#78909e;padding:10px 4px 2px}
+
+    @media(max-width:900px){.headline-grid{grid-template-columns:1fr}.info-grid{grid-template-columns:1fr 1fr}.ship-id{display:none}#map{height:550px}.map-head{align-items:flex-start;flex-direction:column}.actions{width:100%}.actions .btn{flex:1}}
+    @media(max-width:640px){.page{padding:7px}.brandbar{border-radius:16px;padding:12px}.logo{width:42px;height:42px}.headline-grid{gap:7px;margin-top:7px}.next-stop,.location-time,.map-card,.journey{border-radius:16px}.next-stop{grid-template-columns:auto 1fr}.next-stop .arrow{display:none}.next-icon{width:46px;height:46px;font-size:25px}.next-stop strong{font-size:20px}#map{height:56vh;min-height:430px}.explain{max-width:220px;padding:8px 9px}.story{grid-template-columns:1fr}.step{min-height:auto;display:grid;grid-template-columns:42px 1fr;align-items:center;column-gap:8px}.bubble{margin:0}.step small,.step strong,.step span{grid-column:2}.step:not(:last-child):after{content:"↓";left:12px;right:auto;top:43px}.info-grid{grid-template-columns:1fr 1fr}.legend{gap:8px}.map-head p{font-size:8px}}
   </style>
 </head>
 <body>
 <main class="page">
-  <section class="hero">
-    <div>
-      <div class="eyebrow">Gemi Takibi</div>
-      <h1>🚢 MAJESTIC MAERSK</h1>
-      <div class="ids">IMO 9619919 · MMSI 219018501 · Konteyner TGBU6051037</div>
-      <div class="destination">
-        <div class="arrow">➡️</div>
-        <div><small>Bu gemi şimdi buraya gidiyor</small><strong id="bigDestination">Yükleniyor…</strong></div>
-      </div>
+  <header class="brandbar">
+    <div class="brand">
+      <div class="logo">TL</div>
+      <div><small>Denizcilik Takip Sistemi</small><h1>TURCON LAZER GEMİ TAKİP</h1></div>
     </div>
-    <div class="freshbox">
-      <div class="label">📡 Bu konum en son ne zaman alındı?</div>
+    <div class="ship-id"><strong>MAJESTIC MAERSK</strong><br>IMO 9619919 · MMSI 219018501<br>📦 TGBU6051037</div>
+  </header>
+
+  <section class="headline-grid">
+    <article class="next-stop">
+      <div class="next-icon">⚓</div>
+      <div><div class="eyebrow">Geminin sıradaki durağı</div><strong id="bigDestination">Yükleniyor…</strong><div class="sub" id="destinationExplain">Gemi bu limana doğru seyrediyor.</div></div>
+      <div class="arrow">→</div>
+    </article>
+    <article class="location-time">
+      <div class="eyebrow">📡 SON ALINAN KONUMUN ZAMANI</div>
       <div class="time" id="lastSeen">—</div>
       <div class="age" id="ageBadge">Hesaplanıyor…</div>
-      <button class="refresh" id="refreshTop">↻ Son veriyi kontrol et</button>
-    </div>
+      <div class="time-note" id="timeNote">Bu saat, haritadaki gemi işaretinin hangi zamana ait olduğunu gösterir.</div>
+      <button class="refresh" id="refreshTop">↻ VERİYİ YENİLE</button>
+    </article>
   </section>
 
-  <section class="mapcard">
-    <div class="mapbar">
-      <div><h2>Geminin yolu</h2><p>Mavi çizgi geminin ana rotası. Turuncu kesik çizgi Mersin bağlantısının henüz doğrulanmadığını gösterir.</p></div>
-      <div class="mapactions"><button class="btn primary" id="findShip">🚢 Gemiyi Göster</button><button class="btn" id="showRoute">🌍 Tüm Rotayı Göster</button><button class="btn" id="toggleLayer">🛰️ Uydu</button></div>
+  <section class="map-card">
+    <div class="map-head">
+      <div><h2>🌍 Geminin yolculuğunu haritada gör</h2><p>Renkleri takip et: geçtiği yol, şu anki hedefi, sonraki rota ve henüz kesinleşmeyen Türkiye bağlantısı birbirinden ayrıdır.</p></div>
+      <div class="actions"><button class="btn primary" id="findShip">🚢 Son Konumu Göster</button><button class="btn" id="showRoute">🌍 Tüm Yolculuk</button><button class="btn" id="toggleLayer">🛰️ Uydu</button></div>
     </div>
-    <div id="map"></div>
+    <div class="map-wrap">
+      <div class="explain"><small>Çok basit anlatım</small><strong id="simpleSentence">Gemi yükleniyor…</strong><span id="simpleDetail">Son alınan konum ve sıradaki durak burada gösterilecek.</span></div>
+      <div id="map"></div>
+    </div>
+    <div class="legend">
+      <span class="leg"><i class="sample s-green"></i> Geçtiği yol</span>
+      <span class="leg"><i class="sample s-orange"></i> Şimdi gittiği yer</span>
+      <span class="leg"><i class="sample s-blue"></i> Sonraki planlı rota</span>
+      <span class="leg"><i class="sample s-gray"></i> Henüz doğrulanmadı</span>
+    </div>
   </section>
 
   <section class="journey">
-    <h2>Bu geminin yolculuğu</h2>
-    <div class="journey-sub">Bir bakışta nereden geldiğini ve nereye gittiğini gösterir.</div>
-    <div class="stops">
-      <div class="stop done"><div class="circle">✓</div><div class="stop-name">Ningbo / Meishan</div><div class="stop-state">Çıkış yaptı</div></div>
-      <div class="stop next"><div class="circle">2</div><div class="stop-name">Tanjung Pelepas</div><div class="stop-state">Sıradaki durak</div></div>
-      <div class="stop planned"><div class="circle">3</div><div class="stop-name">Port Said</div><div class="stop-state">Planlanan ana rota</div></div>
-      <div class="stop unverified"><div class="circle">4</div><div class="stop-name">Mersin</div><div class="stop-state">Konteyner bağlantısı doğrulanmayı bekliyor</div></div>
+    <div class="journey-head"><div><h2>Geminin hikâyesi</h2><p>Bir çocuk bile soldan sağa bakarak yolculuğu anlayabilir.</p></div></div>
+    <div class="story">
+      <article class="step done"><div class="bubble">✓</div><small>1 · Geçti</small><strong>Ningbo / Meishan</strong><span>Gemi Çin’deki bu limandan ayrıldı.</span></article>
+      <article class="step now"><div class="bubble">🚢</div><small>2 · Son kayıt</small><strong>Son alınan konum</strong><span id="storyPosition">Haritadaki büyük gemi işareti.</span></article>
+      <article class="step next"><div class="bubble">→</div><small>3 · Şimdi gidiyor</small><strong id="storyNext">Tanjung Pelepas</strong><span>Geminin sıradaki hedef limanı.</span></article>
+      <article class="step plan"><div class="bubble">4</div><small>4 · Sonraki rota</small><strong>Port Said</strong><span>Ana rota üzerinde izlenen sonraki bölge.</span></article>
+      <article class="step wait"><div class="bubble">?</div><small>5 · Bekliyor</small><strong>Mersin</strong><span>Konteynerin Türkiye bağlantısı henüz kesinleşmedi.</span></article>
     </div>
   </section>
 
-  <section class="facts">
-    <div class="fact"><div class="k">📍 Son bilinen konum</div><div class="v" id="coords">—</div></div>
-    <div class="fact"><div class="k">⚓ Son liman</div><div class="v" id="lastPort">—</div></div>
-    <div class="fact"><div class="k">💨 Hız</div><div class="v" id="speed">—</div></div>
-    <div class="fact"><div class="k">🕒 Sıradaki liman ETA</div><div class="v" id="eta">—</div></div>
+  <section class="info-grid">
+    <article class="info teal"><small>📍 Son bilinen koordinat</small><strong id="coords">—</strong></article>
+    <article class="info"><small>⚓ Kalktığı son liman</small><strong id="lastPort">—</strong></article>
+    <article class="info"><small>💨 Gemi hızı</small><strong id="speed">—</strong></article>
+    <article class="info orange"><small>🕒 Sıradaki liman ETA</small><strong id="eta">—</strong></article>
   </section>
 
-  <div class="container"><div>📦</div><div><strong>TGBU6051037 konteyneri</strong><span id="containerText">Konteyner bilgisi yükleniyor…</span></div></div>
-  <div class="note">AIS verisi gerçek zamanlı olmayabilir. Konumun alındığı zaman her zaman yukarıda açıkça gösterilir.</div>
+  <section class="cargo"><div class="cargo-icon">📦</div><div><small>Konteyner takibi</small><strong>TGBU6051037</strong><span id="containerText">Konteyner bilgisi yükleniyor…</span></div></section>
+  <footer class="footer">TURCON LAZER GEMİ TAKİP · AIS konumu gerçek zamanlı olmayabilir. Bu nedenle son konumun alınma zamanı her zaman açıkça gösterilir.</footer>
 </main>
+
 <script>
   const street=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'});
   const satellite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:18,attribution:'Tiles © Esri'});
-  const map=L.map('map',{layers:[street],worldCopyJump:true,zoomControl:true}).setView([18,78],3);
-  let useSatellite=false,data=null,shipMarker=null,routeLine=null,turkeyLine=null,portMarkers=[];
+  const map=L.map('map',{layers:[street],worldCopyJump:true,zoomControl:true,preferCanvas:true}).setView([18,78],3);
+  let useSatellite=false,data=null,shipMarker=null,travelledLine=null,currentLine=null,futureLine=null,turkeyLine=null,extraLines=[],portMarkers=[];
   const $=id=>document.getElementById(id);
   const fmt=(iso,zone='Europe/Istanbul')=>{if(!iso)return'Bilinmiyor';try{return new Intl.DateTimeFormat('tr-TR',{dateStyle:'long',timeStyle:'short',timeZone:zone}).format(new Date(iso));}catch{return iso}};
-  function age(iso){if(!iso)return{txt:'Konum zamanı bilinmiyor',stale:true};const ms=Date.now()-new Date(iso).getTime(),h=Math.max(0,ms/36e5);if(h<1)return{txt:`${Math.round(h*60)} dakika önce`,stale:false};if(h<24)return{txt:`${Math.round(h)} saat önce`,stale:h>6};return{txt:`${Math.round(h/24)} gün önce`,stale:true}}
-  const shipIcon=()=>L.divIcon({className:'shipwrap',html:'<div class="shipbubble">🚢</div>',iconSize:[62,62],iconAnchor:[31,31]});
-  const portIcon=s=>L.divIcon({className:'portwrap',html:`<div class="portdot ${s==='completed'?'done':s==='next'?'next':s==='unverified'?'unverified':'planned'}"></div>`,iconSize:[24,24],iconAnchor:[12,12]});
-  function clear(){[shipMarker,routeLine,turkeyLine].forEach(x=>x&&map.removeLayer(x));portMarkers.forEach(x=>map.removeLayer(x));portMarkers=[]}
-  function seaRoute(){return [[29.87,121.55],[27,120],[23,117],[18,113],[12,109],[6,105],[2,103.4],[1.36,103.55],[4,98],[7,89],[6,80],[9,70],[12,58],[12.6,46],[17,41],[23,37],[28,34.5],[30.0,32.55],[31.22,32.35]]}
+  function age(iso){if(!iso)return{txt:'Konum zamanı bilinmiyor',level:'danger'};const h=Math.max(0,(Date.now()-new Date(iso).getTime())/36e5);if(h<1)return{txt:`${Math.round(h*60)} dakika önce alındı`,level:'fresh'};if(h<12)return{txt:`${Math.round(h)} saat önce alındı`,level:'fresh'};if(h<48)return{txt:`${Math.round(h)} saat önce alındı`,level:'stale'};return{txt:`${Math.round(h/24)} gün önce alındı`,level:'danger'}}
+  const shipIcon=()=>L.divIcon({className:'shipwrap',html:'<div class="shipbubble">🚢</div>',iconSize:[64,64],iconAnchor:[32,32]});
+  const portIcon=s=>L.divIcon({className:'portwrap',html:`<div class="portdot ${s==='completed'?'done':s==='next'?'next':s==='unverified'?'unverified':'planned'}"></div>`,iconSize:[22,22],iconAnchor:[11,11]});
+
+  const chinaToCurrent=(lat,lon)=>[[29.87,121.55],[28.2,120.6],[25.5,119.1],[22.3,116.8],[18.4,113.7],[15.0,111.7],[12.0,110.0],[9.0,108.0],[lat,lon]];
+  const currentToTanjung=(lat,lon)=>[[lat,lon],[7.2,107.1],[4.3,104.8],[2.2,103.4],[1.36,103.55]];
+  const tanjungToPortSaid=()=>[[1.36,103.55],[3.5,99.0],[5.9,92.0],[6.3,83.0],[7.2,76.0],[10.5,66.0],[12.4,56.0],[12.7,46.0],[16.0,42.0],[21.5,38.0],[27.5,34.6],[29.9,32.55],[31.22,32.35]];
+  const portSaidToMersin=()=>[[31.22,32.35],[32.5,32.1],[34.1,32.2],[35.6,33.0],[36.77,34.65]];
+
+  function clearMap(){[shipMarker,travelledLine,currentLine,futureLine,turkeyLine,...extraLines].forEach(x=>x&&map.removeLayer(x));extraLines=[];portMarkers.forEach(x=>map.removeLayer(x));portMarkers=[]}
+  function statusText(s){return s==='completed'?'Geçti':s==='next'?'Sıradaki durak':s==='unverified'?'Henüz doğrulanmadı':'Planlanan rota'}
+
   function draw(d){
-    clear();data=d;const v=d.vessel||{},c=d.container||{},route=d.route||[],a=age(v.positionTime);
-    $('bigDestination').textContent=v.nextPort||'Henüz bilinmiyor';$('lastSeen').textContent=fmt(v.positionTime);$('ageBadge').textContent=a.txt;$('ageBadge').className='age'+(a.stale?' stale':'');
-    $('coords').textContent=`${Number(v.lat).toFixed(4)}°, ${Number(v.lon).toFixed(4)}°`;$('lastPort').textContent=v.lastPort||'—';$('speed').textContent=v.speedKn!=null?`${v.speedKn} knot`:'—';$('eta').textContent=fmt(v.eta,'Asia/Kuala_Lumpur');
-    $('containerText').textContent=`${c.location||'Konumu doğrulanmadı'}. Aktarma gemisi: ${c.transferVessel||'Henüz doğrulanmadı'}. Mersin ETA: ${c.mersinEta||'Henüz doğrulanmadı'}.`;
-    if(Number.isFinite(Number(v.lat))&&Number.isFinite(Number(v.lon))){shipMarker=L.marker([v.lat,v.lon],{icon:shipIcon(),zIndexOffset:1000}).addTo(map).bindTooltip('ŞU AN BURADA',{permanent:true,direction:'top',offset:[0,-34],className:'nowlabel'}).bindPopup(`<b>🚢 MAJESTIC MAERSK</b><br>Son konum: ${fmt(v.positionTime)}<br>Hız: ${v.speedKn??'—'} knot<br><b>Buraya gidiyor: ${v.nextPort||'—'}</b>`)}
-    route.forEach(p=>{const m=L.marker([p.lat,p.lon],{icon:portIcon(p.status)}).addTo(map).bindTooltip(p.name,{permanent:true,direction:'top',offset:[0,-10]});portMarkers.push(m)});
-    routeLine=L.polyline(seaRoute(),{color:'#1788dc',weight:5,opacity:.9,lineCap:'round'}).addTo(map);
-    const ps=route.find(p=>String(p.name).includes('Port Said')),me=route.find(p=>p.name==='Mersin');if(ps&&me)turkeyLine=L.polyline([[ps.lat,ps.lon],[33.2,32.0],[35.0,32.8],[me.lat,me.lon]],{color:'#ff9f1c',weight:5,dashArray:'10 9',opacity:.95}).addTo(map).bindTooltip('Mersin bağlantısı doğrulanmayı bekliyor');
+    clearMap();data=d;const v=d.vessel||{},c=d.container||{},route=d.route||[],a=age(v.positionTime);const lat=Number(v.lat),lon=Number(v.lon);
+    $('bigDestination').textContent=v.nextPort||'Henüz bilinmiyor';$('storyNext').textContent=v.nextPort||'Henüz bilinmiyor';
+    $('lastSeen').textContent=fmt(v.positionTime);$('ageBadge').textContent=a.txt;$('ageBadge').className='age'+(a.level==='stale'?' stale':a.level==='danger'?' danger':'');
+    $('timeNote').innerHTML=a.level==='danger'?'<strong>Dikkat:</strong> Bu haritadaki gemi işareti güncel canlı konum olmayabilir. Son alınan AIS kaydı gösteriliyor.':'Haritadaki gemi işareti bu tarih ve saatte alınan AIS konumudur.';
+    $('coords').textContent=(Number.isFinite(lat)&&Number.isFinite(lon))?`${lat.toFixed(4)}°, ${lon.toFixed(4)}°`:'—';$('lastPort').textContent=v.lastPort||'—';$('speed').textContent=v.speedKn!=null?`${v.speedKn} knot`:'—';$('eta').textContent=fmt(v.eta,'Asia/Kuala_Lumpur');
+    $('simpleSentence').textContent=`Gemi ${v.lastPort||'son limanından'} çıktı.`;$('simpleDetail').textContent=`Son alınan konuma göre sıradaki durağı ${v.nextPort||'bilinmiyor'}.`;$('storyPosition').textContent=`${fmt(v.positionTime)} tarihindeki son AIS konumu.`;
+    $('containerText').textContent=`${c.location||'Konumu doğrulanmadı'} · Aktarma gemisi: ${c.transferVessel||'Henüz doğrulanmadı'} · Mersin ETA: ${c.mersinEta||'Henüz doğrulanmadı'}.`;
+
+    if(Number.isFinite(lat)&&Number.isFinite(lon)){
+      shipMarker=L.marker([lat,lon],{icon:shipIcon(),zIndexOffset:1100}).addTo(map)
+        .bindTooltip('SON ALINAN KONUM',{permanent:true,direction:'top',offset:[0,-35],className:'lastlabel'})
+        .bindPopup(`<b>🚢 MAJESTIC MAERSK</b><br><b>Bu konumun zamanı:</b> ${fmt(v.positionTime)}<br>Hız: ${v.speedKn??'—'} knot<br><b>Sıradaki durak:</b> ${v.nextPort||'—'}`);
+      travelledLine=L.polyline(chinaToCurrent(lat,lon),{color:'#20b879',weight:5,opacity:.9,lineCap:'round'}).addTo(map);
+      currentLine=L.polyline(currentToTanjung(lat,lon),{color:'#ff9f1c',weight:6,opacity:.95,lineCap:'round'}).addTo(map).bindTooltip(`Şimdi ${v.nextPort||'sıradaki limana'} doğru`,{sticky:true});
+    }
+    futureLine=L.polyline(tanjungToPortSaid(),{color:'#268ee6',weight:5,opacity:.85,lineCap:'round'}).addTo(map);
+    turkeyLine=L.polyline(portSaidToMersin(),{color:'#8797a3',weight:5,dashArray:'10 9',opacity:.9,lineCap:'round'}).addTo(map).bindTooltip('Mersin bağlantısı henüz doğrulanmadı',{sticky:true});
+
+    route.forEach(p=>{const m=L.marker([p.lat,p.lon],{icon:portIcon(p.status)}).addTo(map).bindTooltip(p.name,{permanent:true,direction:'top',offset:[0,-9]}).bindPopup(`<b>${p.name}</b><br>${p.country}<br>${statusText(p.status)}`);portMarkers.push(m)});
   }
-  async function load(focus=false){try{const r=await fetch(`data/vessel.json?t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw 0;const d=await r.json();draw(d);if(focus)setTimeout(focusShip,100)}catch(e){$('lastSeen').textContent='Veri alınamadı';$('ageBadge').textContent='Yeniden deneyin';$('ageBadge').className='age stale'}}
-  function focusShip(){if(!data||!shipMarker)return;map.flyTo([data.vessel.lat,data.vessel.lon],6,{duration:1});setTimeout(()=>shipMarker.openPopup(),800)}
-  function fit(){if(!data)return;map.fitBounds([[29.87,121.55],[1.36,103.55],[31.22,32.35],[36.77,34.65]],{padding:[30,30],maxZoom:4})}
-  function toggle(){useSatellite=!useSatellite;if(useSatellite){map.removeLayer(street);satellite.addTo(map);$('toggleLayer').textContent='🗺️ Harita'}else{map.removeLayer(satellite);street.addTo(map);$('toggleLayer').textContent='🛰️ Uydu'}}
-  $('refreshTop').onclick=()=>load(true);$('findShip').onclick=focusShip;$('showRoute').onclick=fit;$('toggleLayer').onclick=toggle;
-  load().then(()=>setTimeout(fit,250));
+
+  async function load(focus=false){
+    $('lastSeen').textContent='Veri alınıyor…';
+    try{const r=await fetch(`data/vessel.json?t=${Date.now()}`,{cache:'no-store'});if(!r.ok)throw new Error('HTTP');const d=await r.json();draw(d);if(focus)setTimeout(focusShip,120)}
+    catch(e){$('lastSeen').textContent='Veri alınamadı';$('ageBadge').textContent='Yeniden deneyin';$('ageBadge').className='age danger';$('timeNote').textContent='Takip veri dosyası yüklenemedi.'}
+  }
+  function focusShip(){if(!data||!shipMarker)return;map.flyTo([data.vessel.lat,data.vessel.lon],6,{duration:1});setTimeout(()=>shipMarker.openPopup(),750)}
+  function fitAll(){map.fitBounds([[29.87,121.55],[1.36,103.55],[31.22,32.35],[36.77,34.65]],{padding:[28,28],maxZoom:4})}
+  function toggleMap(){useSatellite=!useSatellite;if(useSatellite){map.removeLayer(street);satellite.addTo(map);$('toggleLayer').textContent='🗺️ Harita'}else{map.removeLayer(satellite);street.addTo(map);$('toggleLayer').textContent='🛰️ Uydu'}}
+  $('refreshTop').onclick=()=>load(true);$('findShip').onclick=focusShip;$('showRoute').onclick=fitAll;$('toggleLayer').onclick=toggleMap;
+  load().then(()=>setTimeout(fitAll,240));
 </script>
 </body>
 </html>
